@@ -3,10 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>QAIRU Games — Qazaq AI Research University</title>
+<title>QAIRU Games & AI Navigator — Qazaq AI Research University</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Leaflet Maps CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,6 +22,7 @@
     <div class="nav-right">
       <div class="nav-links">
         <a href="#games">Игры</a>
+        <a href="#navigator">ИИ Навигатор</a>
         <a href="#crew">Команда</a>
       </div>
       <button class="snd-toggle" id="sndToggle" aria-label="Переключить звук" title="Включить / выключить звук">
@@ -36,11 +40,12 @@
   <div class="sh s3" aria-hidden="true"></div>
   
   <div class="hero-content">
-    <div class="tag">✦ Games · AI · 2026 ✦</div>
+    <div class="tag">✦ Games · AI Navigator · 2026 ✦</div>
     <h1 aria-label="QAIRU"><span>Q</span><span>A</span><span>I</span><span>R</span><span>U</span></h1>
-    <p class="sub">Qazaq AI Research University<small>Интерактивные основы искусственного интеллекта</small></p>
+    <p class="sub">Qazaq AI Research University<small>Интерактивная лаборатория искусственного интеллекта и алгоритмов</small></p>
     <div class="cta">
       <a class="btn p" href="#games">Играть →</a>
+      <a class="btn" href="#navigator">ИИ Навигатор (GPS) ↗</a>
       <a class="btn" href="#crew">Создатели</a>
     </div>
   </div>
@@ -48,11 +53,12 @@
 
 <div class="mq" aria-hidden="true"><div id="mq"></div></div>
 
+<!-- СЕКЦИЯ ИГР С ДИНАМИЧЕСКИМ ОПИСАНИЕМ -->
 <section class="games" id="games">
   <div class="container">
-    <div class="sec-head">
-      <h2 class="rv">Три игры. Один ИИ.</h2>
-      <p class="lead rv">Выбирай игру и играй прямо здесь. В крестиках-ноликах тебе противостоит непобедимый алгоритм Minimax.</p>
+    <div class="sec-head" id="gamesSecHead">
+      <h2 class="rv" id="gameHeadTitle">✕ Крестики-нолики vs Minimax</h2>
+      <p class="lead rv" id="gameHeadDesc">Классическая теория игр и дерево решений. Алгоритм Minimax просчитывает все возможные исходы партии на 9 шагов вперёд и гарантирует невозможность поражения. Сможешь свести партию вничью?</p>
     </div>
 
     <div class="tabs" id="tabs" role="tablist">
@@ -126,6 +132,79 @@
   </div>
 </section>
 
+<!-- НОВАЯ СЕКЦИЯ: ИИ-НАВИГАТОР С КАРТОЙ GPS И АЛГОРИТМАМИ ПОИСКА ПУТИ -->
+<section class="navigator-sec" id="navigator">
+  <div class="container">
+    <div class="sec-head">
+      <div class="tag">GPS · Поиск пути · Графы</div>
+      <h2 class="rv">ИИ-Навигатор в реальном времени</h2>
+      <p class="lead rv">Интерактивный GPS-навигатор на реальной карте. Выбирай алгоритм поиска (BFS, DFS, UCS, A*) и наблюдай в реальном времени, как искусственный интеллект сканирует улицы города в поисках пути.</p>
+    </div>
+
+    <div class="nav-app-panel">
+      <!-- Панель управления навигатором -->
+      <div class="nav-toolbar">
+        <div class="nav-tool-group">
+          <span class="tool-label">Алгоритм поиска:</span>
+          <div class="algo-pills" id="algoSelector">
+            <button class="algo-btn on" data-algo="astar" title="A* Heuristic Search">★ A* (Эвристика)</button>
+            <button class="algo-btn" data-algo="ucs" title="Uniform Cost Search / Dijkstra">◆ UCS / Дейкстра</button>
+            <button class="algo-btn" data-algo="bfs" title="Breadth-First Search">○ BFS (В ширину)</button>
+            <button class="algo-btn" data-algo="dfs" title="Depth-First Search">↳ DFS (В глубину)</button>
+          </div>
+        </div>
+
+        <div class="nav-tool-group">
+          <span class="tool-label">Действия:</span>
+          <div class="action-btns">
+            <button class="btn p btn-sm" id="btnRunSearch">▶ Построить маршрут</button>
+            <button class="btn btn-sm" id="btnGps">📍 Мой GPS</button>
+            <button class="btn btn-sm" id="btnRandomPoints">🎲 Случайный финиш</button>
+            <button class="btn btn-sm" id="btnClearSearch">↺ Сброс</button>
+          </div>
+        </div>
+
+        <div class="nav-tool-group speed-group">
+          <span class="tool-label">Скорость поиска:</span>
+          <div class="speed-selector" id="speedSelector">
+            <button class="speed-btn" data-speed="1">1x</button>
+            <button class="speed-btn on" data-speed="4">4x</button>
+            <button class="speed-btn" data-speed="12">12x</button>
+            <button class="speed-btn" data-speed="999">⚡ Сразу</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Живая статистика поиска -->
+      <div class="nav-stats-strip">
+        <div class="stat-pill"><span class="stat-title">Статус:</span> <b id="statStatus">Готов к поиску</b></div>
+        <div class="stat-pill"><span class="stat-title">Проверено узлов:</span> <b id="statVisited">0</b></div>
+        <div class="stat-pill"><span class="stat-title">Фронтир (очередь):</span> <b id="statFrontier">0</b></div>
+        <div class="stat-pill"><span class="stat-title">Длина маршрута:</span> <b id="statDistance">—</b></div>
+        <div class="stat-pill"><span class="stat-title">Время вычисления:</span> <b id="statTime">—</b></div>
+      </div>
+
+      <!-- Контейнер интерактивной карты -->
+      <div class="map-wrapper">
+        <div id="aiMap" class="ai-map"></div>
+        <div class="map-hint" id="mapHint">💡 Кликните по карте или перетащите маркеры A и B для выбора точек</div>
+      </div>
+
+      <!-- Описание выбранного алгоритма -->
+      <div class="algo-info-card" id="algoInfoCard">
+        <h4 id="algoInfoTitle">★ Алгоритм A* (A-Star Search)</h4>
+        <p id="algoInfoDesc">Золотой стандарт навигационных систем (Яндекс.Карты, 2ГИС, Google Maps). Оценивает функцию f(n) = g(n) + h(n), где h(n) — расстояние по прямой до цели. Волна поиска устремляется строго в сторону назначения, находя кратчайший маршрут с минимальным числом проверенных улиц.</p>
+        <div class="algo-complexity">
+          <span class="chip">Оптимальность: <b>Гарантирована</b></span>
+          <span class="chip">Временная сложность: <b>O(E + V log V)</b></span>
+          <span class="chip">Эвристика: <b>Евклидово расстояние</b></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- КОМАНДА ПРОЕКТА -->
 <section class="crew" id="crew">
   <div class="container">
     <div class="sec-head">
@@ -137,7 +216,7 @@
         <div class="av">BT</div>
         <h3>Batyr Tokenuly</h3>
         <small>QAIRU</small>
-        <span class="badge">Team Lead & AI</span>
+        <span class="badge">Team Lead & Backends</span>
       </div>
       <div class="pc rv" data-tilt>
         <div class="av">AI</div>
