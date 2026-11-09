@@ -1,0 +1,571 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Охотник за кладом</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+/* Layout: arcade cabinet — HUD strip on top, glowing dungeon board left, mission console right; single dark game world */
+:root{
+  color-scheme:dark;
+  --bg:#0A1220; --panel:#111D33; --panel2:#0E182B; --floor:#16243E; --line:#24375C;
+  --ink:#E8EEF9; --muted:#8FA3C4; --wall:#2E3F66; --wall2:#3B5080;
+  --gold:#FFC145; --robot:#4CC9F0; --guard:#FF4D6D; --hint:#7CF0B5;
+  --display:"Russo One","Golos Text",system-ui,sans-serif;
+  --body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  background-image:linear-gradient(var(--panel2) 1px,transparent 1px),linear-gradient(90deg,var(--panel2) 1px,transparent 1px);
+  background-size:32px 32px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:16px}
+
+/* HUD */
+.hud{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px;box-shadow:0 0 0 1px #000 inset,0 8px 24px #0006}
+.logo{display:flex;align-items:center;gap:12px}
+.logo h1{font-family:var(--display);font-weight:400;font-size:clamp(20px,3.2vw,28px);margin:0;line-height:1;letter-spacing:.02em;
+  color:var(--gold);text-shadow:0 2px 0 #7a4f00,0 0 18px color-mix(in oklab,var(--gold) 40%,transparent)}
+.lvl{font-family:var(--display);font-size:13px;padding:5px 10px;border-radius:8px;background:var(--gold);color:#2a1a00;white-space:nowrap}
+.stats{display:flex;flex-wrap:wrap;gap:8px}
+.st{display:grid;gap:0;min-width:64px;padding:4px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--line)}
+.st span{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-family:var(--mono)}
+.st b{font-family:var(--mono);font-size:18px;font-variant-numeric:tabular-nums;line-height:1.2}
+.hearts b{color:var(--guard);letter-spacing:2px}
+.hearts b i{font-style:normal;color:var(--line)}
+.score b{color:var(--gold)}
+.iconbtn{font-family:var(--mono);font-size:12px}
+
+.main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.main{grid-template-columns:minmax(0,1fr)}}
+
+/* Board */
+.stage{display:grid;gap:12px}
+.boardShell{position:relative;width:100%;max-width:600px;margin:0 auto}
+.board{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;padding:8px;border-radius:14px;width:100%;aspect-ratio:1;position:relative;
+  background:#060C17;border:2px solid var(--line);box-shadow:0 0 0 4px var(--panel2),0 0 40px #0008, inset 0 0 30px #000a;touch-action:manipulation;transition:box-shadow .3s}
+.board.danger{animation:danger 1s ease-in-out infinite}
+@keyframes danger{50%{box-shadow:0 0 0 4px var(--panel2),0 0 38px color-mix(in oklab,var(--guard) 70%,transparent),inset 0 0 30px #000a}}
+.board.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translate(-8px,2px)}40%{transform:translate(7px,-3px)}60%{transform:translate(-5px,2px)}80%{transform:translate(3px,0)}}
+.cell{position:relative;border-radius:5px;display:grid;place-items:center;
+  background:linear-gradient(color-mix(in srgb,var(--gold) calc(var(--p,0)*72%),transparent),color-mix(in srgb,var(--gold) calc(var(--p,0)*72%),transparent)),var(--floor);
+  box-shadow:inset 0 -2px 0 #0005;font-family:var(--mono);font-size:clamp(8px,1.5vw,11px);font-weight:600;transition:background .4s}
+.cell.wall{background:linear-gradient(180deg,var(--wall2),var(--wall));box-shadow:inset 0 2px 0 #ffffff14,inset 0 -3px 0 #0007}
+.cell.wall::before{content:"";position:absolute;inset:22% 10%;border-top:2px solid #0004;border-bottom:2px solid #0004}
+.cell.visited::before{content:"";position:absolute;width:12%;aspect-ratio:1;border-radius:50%;background:color-mix(in oklab,var(--robot) 45%,transparent);bottom:14%;right:14%}
+.cell.adj{cursor:pointer;outline:2px solid color-mix(in oklab,var(--robot) 45%,transparent);outline-offset:-2px}
+.cell.adj:hover{outline-color:var(--robot);background:color-mix(in srgb,var(--robot) 22%,var(--floor))}
+.cell.best{outline:2px dashed var(--gold);outline-offset:-3px}
+.cell .pct{color:#1b1200;opacity:calc(.35 + var(--p,0));pointer-events:none}
+.cell .pct.lo{color:var(--muted)}
+.cell.gpath::after,.cell.hpath::after{content:"";position:absolute;width:24%;aspect-ratio:1;border-radius:50%;pointer-events:none}
+.cell.gpath::after{background:var(--guard);opacity:.55}
+.cell.hpath::after{background:var(--hint);box-shadow:0 0 10px var(--hint);animation:blink 1s ease-in-out infinite}
+@keyframes blink{50%{opacity:.4}}
+.coin{position:absolute;width:42%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff3c4,var(--gold) 45%,#b07800);
+  box-shadow:0 0 10px color-mix(in oklab,var(--gold) 60%,transparent);animation:spin 2.2s ease-in-out infinite}
+.coin::after{content:"";position:absolute;inset:26%;border-radius:50%;border:2px solid #9a6600aa}
+@keyframes spin{50%{transform:scaleX(.35)}}
+.star{position:absolute;font-size:clamp(18px,3.4vw,30px);color:var(--gold);text-shadow:0 0 12px var(--gold);animation:pop .6s ease-out}
+@keyframes pop{from{transform:scale(0) rotate(-90deg)}}
+
+/* moving layer */
+.layer{position:absolute;inset:8px;pointer-events:none}
+.tok,.fx{position:absolute;left:0;top:0;width:calc((100% - 27px)/10);aspect-ratio:1;
+  transform:translate(calc((100% + 3px)*var(--c,0)),calc((100% + 3px)*var(--r,0)))}
+.tok{transition:transform .16s ease-out;z-index:3}
+.tok .b{position:absolute;inset:13%}
+.robot .b{background:linear-gradient(180deg,#8DE3FA,var(--robot));border-radius:28%;box-shadow:0 3px 0 #1a6f8c,0 0 16px color-mix(in oklab,var(--robot) 60%,transparent)}
+.robot .b::before{content:"";position:absolute;left:18%;right:18%;top:30%;height:26%;border-radius:6px;background:#0A1220}
+.robot .b::after{content:"";position:absolute;left:28%;width:12%;top:36%;height:14%;border-radius:50%;background:var(--hint);box-shadow:calc(var(--ew,1)*0px) 0 0 0 var(--hint),0 0 0 0 transparent;
+  box-shadow:300% 0 0 0 var(--hint)}
+.robot .ant{position:absolute;left:46%;top:-2%;width:8%;height:16%;background:#8DE3FA;border-radius:2px}
+.robot .ant::after{content:"";position:absolute;left:-60%;top:-60%;width:220%;aspect-ratio:1;border-radius:50%;background:var(--gold);animation:blink .8s infinite}
+.guard .b{background:linear-gradient(180deg,#FF8FA3,var(--guard));border-radius:40% 40% 18% 18%;box-shadow:0 3px 0 #8f1d33,0 0 16px color-mix(in oklab,var(--guard) 60%,transparent)}
+.guard .b::before,.guard .b::after{content:"";position:absolute;top:34%;width:18%;height:18%;background:#0A1220;border-radius:50%}
+.guard .b::before{left:24%;clip-path:polygon(0 30%,100% 0,100% 100%,0 100%)}
+.guard .b::after{right:24%;clip-path:polygon(0 0,100% 30%,100% 100%,0 100%)}
+.fx{z-index:4}
+.ripple::after{content:"";position:absolute;inset:20%;border-radius:50%;border:3px solid var(--rc);animation:ripple .9s ease-out forwards}
+@keyframes ripple{to{transform:scale(4.5);opacity:0;border-width:1px}}
+.float span{position:absolute;left:50%;top:10%;transform:translateX(-50%);font-family:var(--display);font-size:clamp(12px,2vw,16px);white-space:nowrap;
+  color:var(--fc);text-shadow:0 2px 0 #000;animation:floatup 1.1s ease-out forwards}
+@keyframes floatup{to{top:-90%;opacity:0}}
+canvas.confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6}
+
+/* overlay */
+.over{position:absolute;inset:0;display:grid;place-items:center;background:#0A1220c4;backdrop-filter:blur(3px);border-radius:14px;z-index:8;padding:16px}
+.card{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:22px;max-width:420px;width:100%;display:grid;gap:12px;text-align:center;box-shadow:0 20px 50px #000a}
+.card h2{font-family:var(--display);font-weight:400;margin:0;font-size:clamp(22px,4vw,30px);line-height:1.1}
+.card h2.win{color:var(--gold)} .card h2.lose{color:var(--guard)} .card h2.start{color:var(--robot)}
+.card p{margin:0;color:var(--muted);font-size:14px}
+.card ul{margin:0;padding:0;list-style:none;display:grid;gap:6px;text-align:left;font-size:14px}
+.card li{display:flex;gap:10px;align-items:center}
+.card li .sw{flex:none}
+.bd{font-family:var(--mono);font-size:13px;display:grid;gap:4px;text-align:left;background:var(--panel2);border-radius:10px;padding:10px 12px}
+.bd div{display:flex;justify-content:space-between;gap:12px}
+.bd .tot{border-top:1px solid var(--line);padding-top:6px;color:var(--gold);font-weight:700}
+
+/* actions */
+.actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+button,select{font:inherit;font-size:14px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:9px 14px;cursor:pointer;transition:transform .08s,background .15s}
+button:active{transform:translateY(2px)}
+button:hover:not(:disabled){background:#182847}
+button.big{font-family:var(--display);font-size:16px;padding:12px 20px;background:var(--gold);color:#2a1a00;border:0;box-shadow:0 4px 0 #9a6600}
+button.big:hover:not(:disabled){background:#ffd170}
+button.act{display:inline-flex;gap:8px;align-items:center;font-weight:600}
+button.act.h{border-color:color-mix(in oklab,var(--hint) 60%,transparent);color:var(--hint)}
+button.act.s{border-color:color-mix(in oklab,var(--robot) 60%,transparent);color:var(--robot)}
+button.act small{font-family:var(--mono);font-weight:400;color:var(--muted);font-size:11px}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,.cell:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-bottom-width:3px;border-radius:5px;padding:0 5px;color:var(--muted);background:var(--panel2)}
+.pad{display:none;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,48px);gap:6px;justify-content:center}
+.pad button{font-size:20px;padding:0;box-shadow:0 3px 0 #000}
+.pad .up{grid-column:2;grid-row:1}
+.pad [data-d=left]{grid-column:1;grid-row:2}.pad [data-d=down]{grid-column:2;grid-row:2}.pad [data-d=right]{grid-column:3;grid-row:2}
+@media (hover:none),(max-width:860px){.pad{display:grid}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:4px;display:inline-block}
+
+/* side console */
+.side,.stage{grid-template-columns:minmax(0,1fr)}
+.side{display:grid;gap:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.label{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 10px;display:flex;justify-content:space-between;gap:8px}
+.reading{display:flex;align-items:center;gap:14px}
+.gauge{width:64px;height:64px;flex:none;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--rc,var(--muted)) calc(var(--g,0)*1turn),var(--panel2) 0);transition:--g .4s}
+.gauge::after{content:"";width:46px;height:46px;border-radius:50%;background:var(--panel)}
+.rword{font-family:var(--display);font-size:26px;line-height:1;color:var(--rc,var(--muted))}
+.small{font-size:13px;color:var(--muted)}
+.tag{font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:4px;background:var(--robot);color:#04202b;margin-left:6px;vertical-align:middle}
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;margin-top:12px}
+th,td{padding:5px 6px;text-align:center;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:400}
+th:first-child,td:first-child{text-align:left}
+td.hl{background:color-mix(in oklab,var(--gold) 22%,transparent);color:var(--gold);font-weight:700}
+.tbl{overflow-x:auto}
+.formula{font-family:var(--mono);font-size:12px;background:var(--panel2);border-radius:8px;padding:8px 10px;margin-top:10px;overflow-x:auto;white-space:nowrap;color:var(--hint)}
+.meter{height:10px;border-radius:6px;background:var(--panel2);overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;width:var(--w,0%);background:linear-gradient(90deg,#b07800,var(--gold));transition:width .4s}
+.loop{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.step{font-size:12px;text-align:center;padding:8px 4px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);transition:all .2s}
+.step b{display:block;font-family:var(--display);font-weight:400;font-size:13px;color:var(--ink)}
+.step.on{background:var(--robot);border-color:var(--robot);color:#04202b}
+.step.on b{color:#04202b}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-family:var(--mono);font-size:12px;max-height:180px;overflow-y:auto}
+.log li{display:flex;gap:8px;padding:4px 6px;border-radius:6px;background:var(--panel2)}
+.log li em{font-style:normal;color:var(--muted);flex:none;min-width:34px}
+.log li.good{color:var(--gold)} .log li.bad{color:var(--guard)} .log li.info{color:var(--hint)}
+.log li:first-child{animation:slidein .3s}
+@keyframes slidein{from{opacity:0;transform:translateX(-8px)}}
+details summary{cursor:pointer;font-weight:600}
+details li,details p{color:var(--muted);font-size:14px}
+details ul{padding-left:18px;margin:8px 0 0}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="hud">
+    <div class="logo"><h1>Охотник за кладом</h1><span class="lvl" id="lvl">Уровень 1</span></div>
+    <div class="stats">
+      <div class="st score"><span>Очки</span><b id="hScore">0</b></div>
+      <div class="st hearts"><span>Жизни</span><b id="hLives">♥♥♥</b></div>
+      <div class="st"><span>Ход</span><b id="hTurn">0</b></div>
+      <div class="st"><span>Рекорд</span><b id="hBest">0</b></div>
+      <button class="iconbtn" id="soundBtn" aria-pressed="true">Звук: вкл</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="stage">
+      <div class="boardShell">
+        <div class="board" id="board" aria-label="Игровое поле 10 на 10"></div>
+        <div class="over" id="over"></div>
+      </div>
+      <div class="actions">
+        <button class="act h" id="hintBtn">Подсказка A* <small id="hintN">3</small> <kbd>H</kbd></button>
+        <button class="act s" id="scanBtn">Точный скан <small id="scanN">1</small> <kbd>E</kbd></button>
+        <button id="newBtn">Заново <kbd>R</kbd></button>
+      </div>
+      <div class="pad" aria-label="Кнопки движения">
+        <button class="up" data-d="up" aria-label="Вверх">↑</button>
+        <button data-d="left" aria-label="Влево">←</button>
+        <button data-d="down" aria-label="Вниз">↓</button>
+        <button data-d="right" aria-label="Вправо">→</button>
+      </div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--robot)"></i>Робот</span>
+        <span><i class="sw" style="background:var(--guard)"></i>Охранник и его путь A*</span>
+        <span><i class="sw" style="background:var(--gold)"></i>Вероятность клада</span>
+        <span><i class="sw" style="background:var(--hint);border-radius:50%"></i>Подсказка</span>
+        <span><i class="sw" style="outline:2px dashed var(--gold);outline-offset:-2px"></i>Лучшая догадка</span>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div class="panel">
+        <p class="label"><span>Датчик</span><span id="rKind">шумный</span></p>
+        <div class="reading">
+          <div class="gauge" id="gauge"></div>
+          <div>
+            <div class="rword" id="rword">—</div>
+            <div class="small" id="rnote">Ошибается примерно в каждом 4-м показании</div>
+          </div>
+        </div>
+        <div class="tbl"><table aria-label="Модель датчика P(показание | расстояние)">
+          <thead><tr><th>Клад на расстоянии</th><th>Горячо</th><th>Тепло</th><th>Холодно</th></tr></thead>
+          <tbody id="mtx"></tbody>
+        </table></div>
+        <div class="formula">P(клад | показание) ∝ P(показание | клад) · P(клад)</div>
+        <p class="label" style="margin:12px 0 0"><span>Уверенность в лучшей клетке</span><span id="conf">0%</span></p>
+        <div class="meter"><i id="meter"></i></div>
+        <p class="small" id="alive" style="margin:6px 0 0"></p>
+      </div>
+
+      <div class="panel">
+        <p class="label"><span>Цикл агента</span><span>PEAS</span></p>
+        <div class="loop">
+          <div class="step" id="s1"><b>Воспринять</b>датчик</div>
+          <div class="step" id="s2"><b>Обновить</b>Байес</div>
+          <div class="step" id="s3"><b>Действовать</b>шаг / A*</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <p class="label"><span>Журнал миссии</span><span id="expN"></span></p>
+        <ul class="log" id="log"></ul>
+      </div>
+
+      <details class="panel">
+        <summary>Как это связано с лекциями</summary>
+        <ul>
+          <li><b>Агент и PEAS.</b> P: найти клад и не попасться. E: лабиринт 10×10, частично наблюдаемый. A: шаги вверх, вниз, влево, вправо. S: шумный датчик и точный скан.</li>
+          <li><b>Байес.</b> Сначала все клетки равновероятны. После каждого показания вероятность клетки умножается на правдоподобие P(показание | клад тут) и нормируется. Точный скан даёт правдоподобие 1 или 0 и сразу отсекает много клеток.</li>
+          <li><b>A*.</b> Охранник и подсказка ищут путь с f(n) = g(n) + h(n), h — манхэттенское расстояние. Оно допустимо, поэтому путь всегда кратчайший.</li>
+        </ul>
+        <p>Очки: на старте 100, монета +25, подсказка −50, скан −30, клад +300 и бонус за скорость. С каждым уровнем больше стен и охранник быстрее.</p>
+      </details>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+const N = 10;
+const CATS = ["hot","warm","cold"];
+const RU = {hot:"Горячо", warm:"Тепло", cold:"Холодно"};
+const DIST = {hot:"0–1 клетка", warm:"2–3 клетки", cold:"4+ клетки"};
+const COLOR = {hot:"var(--guard)", warm:"var(--gold)", cold:"var(--robot)"};
+const GVAL = {hot:1, warm:.6, cold:.25};
+const M = {hot:{hot:.75,warm:.20,cold:.05}, warm:{hot:.15,warm:.70,cold:.15}, cold:{hot:.05,warm:.20,cold:.75}};
+const cat = d => d <= 1 ? "hot" : d <= 3 ? "warm" : "cold";
+const rc = i => [Math.floor(i/N), i%N];
+const id = (r,c) => r*N+c;
+const man = (a,b) => { const [ar,ac]=rc(a),[br,bc]=rc(b); return Math.abs(ar-br)+Math.abs(ac-bc); };
+const $ = s => document.getElementById(s);
+
+const boardEl = $("board"), overEl = $("over");
+const cells = [];
+for (let i=0;i<N*N;i++){ const d=document.createElement("div"); d.className="cell"; d.dataset.i=i; boardEl.appendChild(d); cells.push(d); }
+const layer = document.createElement("div"); layer.className="layer"; boardEl.appendChild(layer);
+const robotEl = document.createElement("div"); robotEl.className="tok robot"; robotEl.innerHTML='<div class="b"></div><div class="ant"></div>';
+const guardEl = document.createElement("div"); guardEl.className="tok guard"; guardEl.innerHTML='<div class="b"></div>';
+layer.append(robotEl, guardEl);
+const place = (el,i) => { const [r,c]=rc(i); el.style.setProperty("--r",r); el.style.setProperty("--c",c); };
+
+let best = 0; try { best = +localStorage.getItem("klad-best") || 0; } catch(e){}
+const G = {level:1, lives:3, score:100, sound:true};
+let L = null, phase = "start";
+
+/* ---------- sound ---------- */
+let ac = null;
+function tone(f, d=.08, type="square", v=.04, delay=0){
+  if (!G.sound) return;
+  try {
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t+d);
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t+d+.02);
+  } catch(e){}
+}
+const sfx = {
+  step:()=>tone(200,.04,"square",.02),
+  hot:()=>tone(880,.14,"sine",.06), warm:()=>tone(620,.14,"sine",.05), cold:()=>tone(330,.16,"sine",.05),
+  coin:()=>{tone(988,.07,"square",.04);tone(1319,.14,"square",.04,.07);},
+  hint:()=>{tone(523,.08,"triangle",.06);tone(784,.12,"triangle",.06,.08);},
+  scan:()=>{[300,450,600,800].forEach((f,k)=>tone(f,.07,"sine",.05,k*.05));},
+  hurt:()=>{tone(180,.3,"sawtooth",.07);tone(120,.35,"sawtooth",.06,.12);},
+  win:()=>{[523,659,784,1047,1319].forEach((f,k)=>tone(f,.16,"square",.05,k*.09));},
+  over:()=>{[392,330,262,196].forEach((f,k)=>tone(f,.22,"triangle",.07,k*.16));},
+  alarm:()=>tone(660,.08,"square",.03)
+};
+
+/* ---------- map & search ---------- */
+function nb(i, walls){
+  const [r,c]=rc(i), out=[];
+  for (const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){ const a=r+dr,b=c+dc; if(a>=0&&a<N&&b>=0&&b<N&&!walls.has(id(a,b))) out.push(id(a,b)); }
+  return out;
+}
+function bfsDist(src, walls){
+  const d = new Map([[src,0]]), q=[src];
+  while(q.length){ const x=q.shift(); for(const n of nb(x,walls)) if(!d.has(n)){ d.set(n,d.get(x)+1); q.push(n);} }
+  return d;
+}
+function astar(s, goal, walls){
+  const g=new Map([[s,0]]), from=new Map(), closed=new Set(), open=[{i:s,f:man(s,goal)}];
+  let exp=0;
+  while(open.length){
+    open.sort((a,b)=>a.f-b.f || man(a.i,goal)-man(b.i,goal));
+    const {i}=open.shift(); if(closed.has(i)) continue; closed.add(i); exp++;
+    if(i===goal){ const p=[i]; let k=i; while(from.has(k)){k=from.get(k); p.unshift(k);} return {path:p, exp}; }
+    for(const n of nb(i,walls)){ const ng=g.get(i)+1; if(ng<(g.has(n)?g.get(n):1e9)){ g.set(n,ng); from.set(n,i); open.push({i:n,f:ng+man(n,goal)}); } }
+  }
+  return {path:null, exp};
+}
+function makeMap(prob){
+  const start=id(0,0), gs=id(N-1,N-1), keep=new Set([start,gs,id(0,1),id(1,0),id(N-1,N-2),id(N-2,N-1)]);
+  for(let t=0;t<600;t++){
+    const walls=new Set();
+    for(let i=0;i<N*N;i++) if(!keep.has(i) && Math.random()<prob) walls.add(i);
+    if(bfsDist(start,walls).size===N*N-walls.size) return {walls,start,gs};
+  }
+  return {walls:new Set(),start,gs};
+}
+
+/* ---------- game flow ---------- */
+function startLevel(){
+  const lv = G.level;
+  const {walls,start,gs} = makeMap(Math.min(.27, .15 + .03*(lv-1)));
+  const free=[]; for(let i=0;i<N*N;i++) if(!walls.has(i)) free.push(i);
+  const cand = free.filter(i => man(i,start)>=6 && man(i,gs)>=2);
+  const treasure = cand[Math.floor(Math.random()*cand.length)];
+  const coins = new Set();
+  const pool = free.filter(i => i!==start && i!==gs && i!==treasure);
+  while(coins.size<4 && pool.length) coins.add(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+  const belief = new Float64Array(N*N);
+  for(const i of free) if(i!==start) belief[i]=1;
+  L = {walls, free, robot:start, guard:gs, treasure, coins, belief, visited:new Set([start]),
+       turn:0, hints:3, scans:1, acc:0, rate:Math.min(.9, .3 + .15*(lv-1)),
+       hintPath:null, guardPath:[], exp:null, reading:null, exact:false, startScore:G.score, coinsGot:0};
+  $("log").innerHTML = "";
+  normalize();
+  robotEl.style.transition="none"; guardEl.style.transition="none";
+  place(robotEl,start); place(guardEl,gs);
+  requestAnimationFrame(()=>{ robotEl.style.transition=""; guardEl.style.transition=""; });
+  log(`Уровень ${lv}. Охранник ходит в ${Math.round(L.rate*100)}% ходов.`, "info");
+  sense(false, true);
+  planGuard();
+  render();
+}
+function normalize(){ let s=0; for(const i of L.free) s+=L.belief[i]; if(s>0) for(const i of L.free) L.belief[i]/=s; }
+
+function sense(exact, quiet){
+  const trueCat = cat(man(L.robot, L.treasure));
+  let reading = trueCat;
+  if(!exact){ const r=Math.random(); let a=0; for(const k of CATS){ a+=M[trueCat][k]; if(r<a){reading=k;break;} } }
+  for(const i of L.free){
+    const c = cat(man(L.robot,i));
+    L.belief[i] *= exact ? (c===reading?1:0) : M[c][reading];
+  }
+  L.belief[L.robot]=0;
+  normalize();
+  L.reading = reading; L.exact = exact;
+  ripple(L.robot, COLOR[reading]);
+  if(!quiet) sfx[reading]();
+  const alive = L.free.filter(i=>L.belief[i]>.005).length;
+  log(`${exact?"Скан":"Датчик"}: «${RU[reading]}» → кандидатов ${alive}`, exact?"info":"");
+}
+function planGuard(){ const r=astar(L.guard,L.robot,L.walls); L.guardPath=r.path||[]; L.exp=r.exp; }
+
+function tryMove(t){
+  if(phase!=="play") return;
+  if(!nb(L.robot,L.walls).includes(t)) return;
+  L.robot=t; L.turn++; L.hintPath=null; L.visited.add(t);
+  place(robotEl,t); sfx.step(); pulse();
+  if(t===L.guard) return hurt();
+  if(L.coins.has(t)){ L.coins.delete(t); L.coinsGot++; addScore(25); floatText(t,"+25","var(--gold)"); sfx.coin(); log("Монета +25","good"); }
+  if(t===L.treasure) return levelClear();
+  sense(false);
+  L.acc += L.rate;
+  if(L.acc>=1){
+    L.acc-=1; planGuard();
+    if(L.guardPath.length>1){ L.guard=L.guardPath[1]; place(guardEl,L.guard); }
+    if(L.guard===L.robot) return hurt();
+  }
+  planGuard();
+  const gd = L.guardPath.length-1;
+  if(gd>0 && gd<=3) sfx.alarm();
+  render();
+}
+function move(dir){
+  const [r,c]=rc(L.robot), d={up:[-1,0],down:[1,0],left:[0,-1],right:[0,1]}[dir];
+  const a=r+d[0], b=c+d[1]; if(a<0||a>=N||b<0||b>=N) return;
+  tryMove(id(a,b));
+}
+function hint(){
+  if(phase!=="play"||L.hints<=0) return;
+  const b = bestCell();
+  const r = astar(L.robot,b,L.walls); if(!r.path) return;
+  L.hintPath=r.path; L.hints--; L.exp=r.exp; addScore(-50); floatText(L.robot,"−50","var(--hint)"); sfx.hint();
+  log(`Подсказка: ${r.path.length-1} шагов, A* раскрыл ${r.exp} клеток`,"info");
+  render();
+}
+function scan(){
+  if(phase!=="play"||L.scans<=0) return;
+  L.scans--; addScore(-30); floatText(L.robot,"−30","var(--robot)"); sfx.scan();
+  sense(true, true); render();
+}
+function bestCell(){ let b=-1,bp=-1; for(const i of L.free) if(L.belief[i]>bp){bp=L.belief[i];b=i;} return b; }
+
+function hurt(){
+  G.lives--; addScore(-150); sfx.hurt(); shake(); floatText(L.robot,"−♥","var(--guard)");
+  log("Охранник поймал робота! −1 жизнь","bad");
+  if(G.lives<=0){ render(); return gameOver(); }
+  const d = bfsDist(L.robot,L.walls); let far=L.guard, fd=-1;
+  for(const [k,v] of d) if(v>fd && k!==L.treasure){fd=v;far=k;}
+  L.guard=far; L.acc=0;
+  setTimeout(()=>place(guardEl,far),250);
+  planGuard(); render();
+}
+function levelClear(){
+  phase="clear";
+  const base=300, lvB=100*G.level, speed=Math.max(0,200-L.turn*5);
+  addScore(base+lvB+speed);
+  sfx.win(); confetti(); render(true);
+  const gained = G.score - L.startScore;
+  showCard(`<h2 class="win">Клад найден!</h2>
+    <p>Уровень ${G.level} пройден за ${L.turn} ${plural(L.turn)}.</p>
+    <div class="bd">
+      <div><span>Клад</span><span>+${base}</span></div>
+      <div><span>Бонус уровня</span><span>+${lvB}</span></div>
+      <div><span>Бонус за скорость</span><span>+${speed}</span></div>
+      <div><span>Монеты (${L.coinsGot})</span><span>+${L.coinsGot*25}</span></div>
+      <div class="tot"><span>Итого за уровень</span><span>${gained>=0?"+":""}${gained}</span></div>
+    </div>
+    <p>Дальше стен больше, а охранник быстрее.</p>
+    <button class="big" data-go="next">Уровень ${G.level+1} →</button>`);
+}
+function gameOver(){
+  phase="over"; sfx.over();
+  const rec = G.score>best; if(rec){ best=G.score; try{localStorage.setItem("klad-best",best);}catch(e){} }
+  render(true);
+  showCard(`<h2 class="lose">Игра окончена</h2>
+    <p>Вы дошли до уровня ${G.level}. Звезда на поле показывает, где был клад.</p>
+    <div class="bd"><div class="tot"><span>Очки</span><span>${G.score}</span></div><div><span>Рекорд</span><span>${best}${rec?" · новый!":""}</span></div></div>
+    <button class="big" data-go="restart">Играть снова</button>`);
+}
+function startScreen(){
+  phase="start";
+  showCard(`<h2 class="start">Охотник за кладом</h2>
+    <p>Найдите клад в лабиринте, пока вас не поймали.</p>
+    <ul>
+      <li><i class="sw" style="background:var(--robot)"></i>Вы робот. Ходите стрелками, WASD или кликом.</li>
+      <li><i class="sw" style="background:var(--gold)"></i>Датчик говорит «горячо / тепло / холодно», но иногда врёт. Золотые клетки — где клад вероятнее.</li>
+      <li><i class="sw" style="background:var(--guard)"></i>Охранник идёт к вам по кратчайшему пути A*. 3 жизни.</li>
+      <li><i class="sw" style="background:var(--hint);border-radius:50%"></i>Подсказка A* и точный скан помогут, но стоят очков.</li>
+    </ul>
+    <button class="big" data-go="start">Начать</button>`);
+}
+function showCard(html){ overEl.innerHTML=`<div class="card">${html}</div>`; overEl.hidden=false; const b=overEl.querySelector("button"); b&&b.focus(); }
+overEl.addEventListener("click", e=>{
+  const go = e.target.closest("[data-go]")?.dataset.go; if(!go) return;
+  overEl.hidden=true;
+  if(go==="next") G.level++;
+  if(go==="restart"||go==="start"){ if(go==="restart"){G.level=1;G.lives=3;G.score=100;} }
+  phase="play"; startLevel();
+});
+function plural(n){ const a=n%10,b=n%100; if(a===1&&b!==11) return "ход"; if(a>=2&&a<=4&&(b<12||b>14)) return "хода"; return "ходов"; }
+
+/* ---------- effects ---------- */
+function addScore(n){ G.score=Math.max(0,G.score+n); }
+function fxAt(i, cls){ const el=document.createElement("div"); el.className="fx "+cls; const [r,c]=rc(i); el.style.setProperty("--r",r); el.style.setProperty("--c",c); layer.appendChild(el); return el; }
+function ripple(i,col){ const el=fxAt(i,"ripple"); el.style.setProperty("--rc",col); setTimeout(()=>el.remove(),950); }
+function floatText(i,t,col){ const el=fxAt(i,"float"); el.style.setProperty("--fc",col); el.innerHTML=`<span>${t}</span>`; setTimeout(()=>el.remove(),1150); }
+function shake(){ boardEl.classList.remove("shake"); void boardEl.offsetWidth; boardEl.classList.add("shake"); }
+function pulse(){ const ids=["s1","s2","s3"]; ids.forEach((x,k)=>setTimeout(()=>ids.forEach(y=>$(y).classList.toggle("on",y===x)),k*170)); setTimeout(()=>ids.forEach(y=>$(y).classList.remove("on")),760); }
+function log(t,kind=""){ const li=document.createElement("li"); li.className=kind; li.innerHTML=`<em>${L?("х"+L.turn):""}</em><span></span>`; li.lastChild.textContent=t; const ul=$("log"); ul.prepend(li); while(ul.children.length>30) ul.lastChild.remove(); }
+function confetti(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv=document.createElement("canvas"); cv.className="confetti"; boardEl.appendChild(cv);
+  const W=cv.width=boardEl.clientWidth*2, H=cv.height=boardEl.clientHeight*2, x=cv.getContext("2d");
+  const cols=["#FFC145","#4CC9F0","#7CF0B5","#FF4D6D","#E8EEF9"];
+  const ps=Array.from({length:120},()=>({x:W/2,y:H/2,vx:(Math.random()-.5)*28,vy:-Math.random()*26-6,s:6+Math.random()*8,c:cols[Math.floor(Math.random()*5)],a:Math.random()*6}));
+  let f=0; (function tick(){ x.clearRect(0,0,W,H); for(const p of ps){p.vy+=.9;p.x+=p.vx;p.y+=p.vy;p.a+=.2; x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore();}
+    if(++f<90) requestAnimationFrame(tick); else cv.remove(); })();
+}
+
+/* ---------- render ---------- */
+function render(reveal){
+  let max=0; for(const i of L.free) max=Math.max(max,L.belief[i]);
+  const b = bestCell();
+  const gset=new Set(L.guardPath.slice(1,-1)), hset=new Set(L.hintPath?L.hintPath.slice(1):[]);
+  const adj=new Set(phase==="play"?nb(L.robot,L.walls):[]);
+  for(let i=0;i<N*N;i++){
+    const el=cells[i], wall=L.walls.has(i), p=L.belief[i];
+    el.className="cell"+(wall?" wall":"")+(L.visited.has(i)&&i!==L.robot?" visited":"")+(adj.has(i)?" adj":"")+
+      (gset.has(i)?" gpath":"")+(hset.has(i)?" hpath":"")+(i===b&&phase==="play"&&max>0?" best":"");
+    const mean = 1/L.free.length;
+    const rel = wall||max<=mean*1.01?0:Math.max(0,Math.min(1,(p-mean)/(max-mean)));
+    el.style.setProperty("--p", rel.toFixed(3));
+    let h="";
+    if(L.coins.has(i)) h+=`<span class="coin"></span>`;
+    else if(!wall && p>=.03 && i!==L.robot && i!==L.guard) h+=`<span class="pct${rel<.45?" lo":""}">${Math.round(p*100)}</span>`;
+    if(reveal && i===L.treasure) h+=`<span class="star">★</span>`;
+    el.innerHTML=h;
+    el.tabIndex=adj.has(i)?0:-1;
+    el.setAttribute("aria-label", wall?"стена":adj.has(i)?"шагнуть сюда":"клетка");
+  }
+  robotEl.style.opacity = G.lives>0 ? 1 : .25;
+  const gd=L.guardPath.length-1;
+  boardEl.classList.toggle("danger", phase==="play" && gd>0 && gd<=3);
+  // HUD
+  $("lvl").textContent=`Уровень ${G.level}`;
+  $("hScore").textContent=G.score; $("hTurn").textContent=L.turn; $("hBest").textContent=Math.max(best,G.score);
+  $("hLives").innerHTML="♥".repeat(Math.max(0,G.lives))+`<i>${"♥".repeat(3-Math.max(0,G.lives))}</i>`;
+  $("hintN").textContent=L.hints; $("scanN").textContent=L.scans;
+  $("hintBtn").disabled=phase!=="play"||L.hints<=0; $("scanBtn").disabled=phase!=="play"||L.scans<=0;
+  // sensor
+  const g=$("gauge"), rw=$("rword");
+  const col = L.reading?COLOR[L.reading]:"var(--muted)";
+  g.style.setProperty("--rc",col); g.style.setProperty("--g",L.reading?GVAL[L.reading]:0);
+  rw.style.setProperty("--rc",col); rw.innerHTML=L.reading?RU[L.reading]+(L.exact?'<span class="tag">точно</span>':""):"—";
+  $("rKind").textContent=L.exact?"точный скан":"шумный";
+  $("mtx").innerHTML=CATS.map(t=>`<tr><td>${DIST[t]}</td>${CATS.map(k=>`<td class="${k===L.reading&&!L.exact?"hl":""}">${M[t][k].toFixed(2)}</td>`).join("")}</tr>`).join("");
+  const conf=Math.round(max*100);
+  $("conf").textContent=conf+"%"; $("meter").style.setProperty("--w",conf+"%");
+  const alive=L.free.filter(i=>L.belief[i]>.005).length;
+  $("alive").textContent=`Клеток-кандидатов: ${alive}. Лучшая догадка обведена пунктиром.`;
+  $("expN").textContent=L.exp!=null?`A*: ${L.exp} кл.`:"";
+}
+
+/* ---------- input ---------- */
+boardEl.addEventListener("click",e=>{ const c=e.target.closest(".cell"); if(c) tryMove(+c.dataset.i); });
+boardEl.addEventListener("keydown",e=>{ const c=e.target.closest(".cell"); if(c&&(e.key==="Enter"||e.key===" ")){e.preventDefault();tryMove(+c.dataset.i);} });
+document.querySelectorAll(".pad button").forEach(b=>b.addEventListener("click",()=>move(b.dataset.d)));
+$("hintBtn").onclick=hint; $("scanBtn").onclick=scan;
+$("newBtn").onclick=()=>{ G.level=1;G.lives=3;G.score=100; overEl.hidden=true; phase="play"; startLevel(); };
+$("soundBtn").onclick=e=>{ G.sound=!G.sound; e.currentTarget.textContent="Звук: "+(G.sound?"вкл":"выкл"); e.currentTarget.setAttribute("aria-pressed",G.sound); };
+document.addEventListener("keydown",e=>{
+  if(e.target.closest&&e.target.closest(".over")) return;
+  const k=e.key.toLowerCase();
+  const m={arrowup:"up",w:"up","ц":"up",arrowdown:"down",s:"down","ы":"down",arrowleft:"left",a:"left","ф":"left",arrowright:"right",d:"right","в":"right"};
+  if(m[k]){ e.preventDefault(); move(m[k]); }
+  else if(k==="h"||k==="р") hint();
+  else if(k==="e"||k==="у") scan();
+  else if(k==="r"||k==="к") $("newBtn").click();
+});
+
+startLevel();
+phase="start"; render(); startScreen();
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QAIRU Games — Qazaq AI Research University</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#top" class="logo" aria-label="QAIRU главная">QA<b>I</b>RU</a>
+    <div class="nav-right">
+      <div class="nav-links">
+        <a href="#games">Игры</a>
+        <a href="#crew">Команда</a>
+      </div>
+      <button class="snd-toggle" id="sndToggle" aria-label="Переключить звук" title="Включить / выключить звук">
+        <span class="snd-icon" id="sndIcon">🔊</span>
+        <span class="snd-lbl">Звук</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="sh s1" aria-hidden="true"></div>
+  <div class="sh s2" aria-hidden="true"></div>
+  <div class="sh s3" aria-hidden="true"></div>
+  
+  <div class="hero-content">
+    <div class="tag">✦ Games · AI · 2026 ✦</div>
+    <h1 aria-label="QAIRU"><span>Q</span><span>A</span><span>I</span><span>R</span><span>U</span></h1>
+    <p class="sub">Qazaq AI Research University<small>Интерактивные основы искусственного интеллекта</small></p>
+    <div class="cta">
+      <a class="btn p" href="#games">Играть →</a>
+      <a class="btn" href="#crew">Создатели</a>
+    </div>
+  </div>
+</header>
+
+<div class="mq" aria-hidden="true"><div id="mq"></div></div>
+
+<section class="games" id="games">
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="rv">Три игры. Один ИИ.</h2>
+      <p class="lead rv">Выбирай игру и играй прямо здесь. В крестиках-ноликах тебе противостоит непобедимый алгоритм Minimax.</p>
+    </div>
+
+    <div class="tabs" id="tabs" role="tablist">
+      <button class="tab on" data-g="0" role="tab" aria-selected="true">✕ Крестики-нолики</button>
+      <button class="tab" data-g="1" role="tab" aria-selected="false">◆ Память</button>
+      <button class="tab" data-g="2" role="tab" aria-selected="false">★ Охотник за кладом</button>
+    </div>
+
+    <!-- Игра 1: Крестики-нолики -->
+    <div class="stage on" id="stage-0">
+      <div class="info">
+        <h3>Крестики-нолики vs ИИ</h3>
+        <p>Ты играешь за ✕, ИИ за ○. Алгоритм Minimax перебирает все возможные ходы и никогда не проигрывает. Сможешь свести партию вничью?</p>
+        <div class="chips-list">
+          <span class="chip">Minimax</span>
+          <span class="chip">Перебор ходов</span>
+          <span class="chip">Теория игр</span>
+        </div>
+      </div>
+      <div class="play">
+        <div class="st" id="ts">Твой ход</div>
+        <div class="board" id="tb"></div>
+        <div class="sc">
+          <span class="chip">Ты: <b id="w1">0</b></span>
+          <span class="chip">Ничьи: <b id="w2">0</b></span>
+          <span class="chip">ИИ: <b id="w3">0</b></span>
+        </div>
+        <button class="btn p" onclick="ttt()">Заново</button>
+      </div>
+    </div>
+
+    <!-- Игра 2: Память -->
+    <div class="stage" id="stage-1">
+      <div class="info">
+        <h3>Память</h3>
+        <p>Найди все пары карточек за минимум ходов. Тренирует внимание, а подобные задачи решают и модели ИИ при поиске совпадений и векторном сравнении.</p>
+        <div class="chips-list">
+          <span class="chip">8 пар</span>
+          <span class="chip">Счётчик ходов</span>
+          <span class="chip" id="bestScoreChip">Рекорд: —</span>
+        </div>
+      </div>
+      <div class="play">
+        <div class="st" id="ms">Ходов: 0</div>
+        <div class="mem" id="mb"></div>
+        <button class="btn p" onclick="mem()">Перемешать</button>
+      </div>
+    </div>
+
+    <!-- Игра 3: Охотник за кладом -->
+    <div class="stage wide" id="stage-2">
+      <div class="info">
+        <div class="hunter-head">
+          <div>
+            <h3>Охотник за кладом</h3>
+            <p>Ты управляешь роботом и ищешь клад. Датчик говорит «горячо», «тепло» или «холодно», но иногда врёт, поэтому робот пересчитывает вероятности после каждого шага. Охранник идёт за тобой по кратчайшему пути. Управление: стрелки или WASD (сначала кликни по игре), либо касание клеток.</p>
+          </div>
+          <a class="btn btn-sm" href="game.html" target="_blank" rel="noopener">На весь экран ↗</a>
+        </div>
+        <div class="chips-list">
+          <span class="chip">Байесовский вывод</span>
+          <span class="chip">Поиск пути A*</span>
+          <span class="chip">Вероятности</span>
+          <a class="chip" style="color:#fff; text-decoration:none;" href="https://claude.ai/artifact/3GYS1jaH7yNvwoczVXEXGB" target="_blank" rel="noopener">Оригинал ↗</a>
+        </div>
+      </div>
+      <div class="iframe-wrap">
+        <iframe title="Охотник за кладом" sandbox="allow-scripts allow-same-origin" loading="lazy" src="game.html"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="crew" id="crew">
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="rv">Created by</h2>
+      <p class="lead rv">Команда разработчиков проекта QAIRU</p>
+    </div>
+    <div class="grid">
+      <div class="pc rv" data-tilt>
+        <div class="av">BT</div>
+        <h3>Batyr Tokenuly</h3>
+        <small>QAIRU</small>
+        <span class="badge">Team Lead & AI</span>
+      </div>
+      <div class="pc rv" data-tilt>
+        <div class="av">AI</div>
+        <h3>Aitmukhanbetov Iasin</h3>
+        <small>QAIRU</small>
+        <span class="badge">Machine Learning</span>
+      </div>
+      <div class="pc rv" data-tilt>
+        <div class="av">RT</div>
+        <h3>Ruslan Tanatar</h3>
+        <small>QAIRU</small>
+        <span class="badge">Frontend & UI/UX</span>
+      </div>
+      <div class="pc rv" data-tilt>
+        <div class="av">DZ</div>
+        <h3>Daulet Zhigerkhan</h3>
+        <small>QAIRU</small>
+        <span class="badge">Game Engine & A*</span>
+      </div>
+      <div class="pc rv" data-tilt>
+        <div class="av">NB</div>
+        <h3>Nurasyl Bekarystanov</h3>
+        <small>QAIRU</small>
+        <span class="badge">Game Dev & Algorithms</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container foot-inner">
+    <span><b>QAIRU</b> — Qazaq AI Research University</span>
+    <span>Основы искусственного интеллекта · 2026</span>
+  </div>
+</footer>
+
+<button class="back-to-top" id="backToTop" aria-label="Вернуться наверх" title="Наверх">↑</button>
+
+<script src="script.js"></script>
+</body>
+</html>
