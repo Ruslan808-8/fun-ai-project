@@ -634,7 +634,7 @@ iframe{
 }
 
 /* ========================================================
-   НОВАЯ СЕКЦИЯ: ИИ НАВИГАТОР С КАРТОЙ GPS И АЛГОРИТМАМИ
+   ИИ НАВИГАТОР С КАРТОЙ GPS И АЛГОРИТМАМИ
    ======================================================== */
 .navigator-sec{
   padding:clamp(60px,8vw,100px) 5vw;
@@ -714,6 +714,71 @@ iframe{
   border-color:var(--pink);
   box-shadow:0 0 14px var(--pink-glow);
   font-weight:800;
+}
+
+/* Heuristic Weight Control (Weighted A*) */
+.weight-group{
+  background:rgba(255,255,255,0.04);
+  padding:8px 14px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.08);
+}
+.weight-control{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.weight-control input[type=range]{
+  width:110px;
+  accent-color:var(--pink);
+  cursor:pointer;
+}
+.weight-val{
+  font-family:'Unbounded',sans-serif;
+  font-size:12px;
+  font-weight:700;
+  color:var(--pink);
+  min-width:62px;
+}
+.weight-badge{
+  font-size:11px;
+  font-weight:700;
+  padding:3px 8px;
+  border-radius:6px;
+  background:rgba(255,46,147,0.15);
+  border:1px solid rgba(255,46,147,0.3);
+  color:#fff;
+  white-space:nowrap;
+  transition:all .2s ease;
+}
+.weight-badge.zero{
+  background:rgba(76,201,240,0.15);
+  border-color:rgba(76,201,240,0.4);
+  color:var(--cyan);
+}
+.weight-badge.admissible{
+  background:rgba(124,240,181,0.15);
+  border-color:rgba(124,240,181,0.4);
+  color:var(--green);
+}
+.weight-badge.inadmissible{
+  background:rgba(255,193,69,0.18);
+  border-color:rgba(255,193,69,0.45);
+  color:var(--yellow);
+}
+
+.bmark-trigger-btn{
+  background:linear-gradient(135deg,rgba(255,46,147,0.25),rgba(76,201,240,0.25));
+  border:1px solid var(--pink);
+  box-shadow:0 0 12px var(--pink-glow);
+  color:#fff;
+}
+.bmark-trigger-btn:hover{
+  background:var(--pink);
+  color:#fff;
+  transform:translateY(-2px);
+  box-shadow:0 0 18px var(--pink-glow);
 }
 
 .action-btns{
@@ -796,7 +861,6 @@ iframe{
   z-index:1;
 }
 
-/* Dark mode styling for OpenStreetMap tiles without requiring any API key */
 .ai-map .leaflet-tile{
   filter:brightness(0.65) invert(1) contrast(2.4) hue-rotate(200deg) saturate(0.35) brightness(0.85);
 }
@@ -907,9 +971,205 @@ iframe{
   color:var(--pink);
 }
 
-/* ========================================================
-   Crew / Creators Section
-   ======================================================== */
+/* Benchmark Card & Comparison Table */
+.benchmark-card{
+  background:rgba(10,18,54,0.92);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:22px;
+  padding:24px 22px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  box-shadow:0 16px 40px rgba(0,0,0,0.45);
+  animation:bmarkIn .35s ease-out;
+}
+@keyframes bmarkIn{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:none}
+}
+.bmark-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.bmark-title{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.bmark-badge{
+  display:inline-block;
+  font:800 11px/1 'Unbounded',sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--pink);
+}
+.bmark-head h3{
+  font:700 18px 'Unbounded',sans-serif;
+  color:#fff;
+  margin:0;
+}
+.bmark-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.bmark-summary{
+  font-size:14px;
+  line-height:1.55;
+  color:rgba(255,255,255,0.88);
+  background:rgba(255,255,255,0.04);
+  padding:12px 16px;
+  border-radius:12px;
+  border-left:3px solid var(--pink);
+}
+.bmark-table-wrap{
+  width:100%;
+  overflow-x:auto;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:rgba(0,0,0,0.25);
+}
+.bmark-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+  text-align:left;
+  min-width:620px;
+}
+.bmark-table th{
+  background:rgba(255,255,255,0.06);
+  padding:12px 14px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  font-size:11px;
+  color:rgba(255,255,255,0.7);
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+.bmark-table td{
+  padding:12px 14px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  font-variant-numeric:tabular-nums;
+  vertical-align:middle;
+}
+.bmark-row{
+  cursor:pointer;
+  transition:background .2s;
+}
+.bmark-row:hover{
+  background:rgba(76,201,240,0.12);
+}
+.bmark-row.active{
+  background:rgba(255,46,147,0.18);
+}
+.bmark-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  flex-shrink:0;
+  display:inline-block;
+}
+.opt-badge{
+  display:inline-block;
+  padding:3px 8px;
+  border-radius:6px;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.opt-badge.good{
+  background:rgba(124,240,181,0.15);
+  color:#7cf0b5;
+  border:1px solid rgba(124,240,181,0.3);
+}
+.opt-badge.warn{
+  background:rgba(255,193,69,0.15);
+  color:#ffc145;
+  border:1px solid rgba(255,193,69,0.35);
+}
+.opt-badge.bad{
+  background:rgba(255,77,109,0.15);
+  color:#ff4d6d;
+  border:1px solid rgba(255,77,109,0.3);
+}
+.bmark-btn-show{
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.14);
+  color:#fff;
+  border-radius:6px;
+  padding:4px 10px;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+}
+.bmark-btn-show:hover{
+  background:var(--pink);
+  border-color:var(--pink);
+}
+
+/* Benchmark Bars (Гистограмма узлов) */
+.bmark-bars-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  background:rgba(255,255,255,0.03);
+  padding:16px 18px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.06);
+}
+.bmark-bars-title{
+  font-size:12px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:rgba(255,255,255,0.7);
+}
+.bmark-bars{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.bmark-bar-row{
+  display:grid;
+  grid-template-columns:130px 1fr 90px;
+  gap:12px;
+  align-items:center;
+  font-size:12px;
+}
+.bmark-bar-name{
+  font-weight:700;
+  color:#fff;
+  white-space:nowrap;
+}
+.bmark-bar-track{
+  height:14px;
+  background:rgba(255,255,255,0.06);
+  border-radius:7px;
+  overflow:hidden;
+  position:relative;
+}
+.bmark-bar-fill{
+  height:100%;
+  border-radius:7px;
+  transition:width .6s cubic-bezier(0.2,0.8,0.2,1);
+}
+.bmark-bar-val{
+  text-align:right;
+  font-family:'JetBrains Mono',monospace;
+  font-weight:600;
+  color:rgba(255,255,255,0.85);
+}
+.bmark-hint{
+  font-size:12px;
+  opacity:.75;
+  text-align:center;
+  color:var(--cyan);
+}
 
 /* ========================================================
    Course Map Section — «Карта курса ИИ»
@@ -1020,8 +1280,9 @@ iframe{
   border-color:rgba(76,201,240,0.45);
 }
 
-/* ======================================================== */
-
+/* ========================================================
+   Crew / Creators Section
+   ======================================================== */
 .crew{
   padding:clamp(60px,8vw,100px) 5vw;
   background:var(--navy);

@@ -132,7 +132,7 @@
   </div>
 </section>
 
-<!-- НОВАЯ СЕКЦИЯ: ИИ-НАВИГАТОР С КАРТОЙ GPS И АЛГОРИТМАМИ ПОИСКА ПУТИ -->
+<!-- СЕКЦИЯ: ИИ-НАВИГАТОР С КАРТОЙ GPS И АЛГОРИТМАМИ ПОИСКА ПУТИ -->
 <section class="navigator-sec" id="navigator">
   <div class="container">
     <div class="sec-head">
@@ -158,9 +158,19 @@
           <span class="tool-label">Действия:</span>
           <div class="action-btns">
             <button class="btn p btn-sm" id="btnRunSearch">▶ Построить маршрут</button>
+            <button class="btn btn-sm bmark-trigger-btn" id="btnBenchmark" title="Мгновенно прогнать A*, UCS, BFS и DFS на этом графе">⚡ Сравнить все 4</button>
             <button class="btn btn-sm" id="btnGps">📍 Мой GPS</button>
             <button class="btn btn-sm" id="btnRandomPoints">🎲 Случайный финиш</button>
             <button class="btn btn-sm" id="btnClearSearch">↺ Сброс</button>
+          </div>
+        </div>
+
+        <div class="nav-tool-group weight-group" id="weightGroup">
+          <span class="tool-label">Вес эвристики <i>w</i> (A*):</span>
+          <div class="weight-control">
+            <input type="range" id="sliderWeight" min="0" max="3" step="0.1" value="1.0" aria-label="Вес эвристики w">
+            <output id="valWeight" class="weight-val" for="sliderWeight">w = 1.0</output>
+            <span class="weight-badge admissible" id="badgeWeight">Допустимая (A*, w=1)</span>
           </div>
         </div>
 
@@ -178,6 +188,7 @@
       <!-- Живая статистика поиска -->
       <div class="nav-stats-strip">
         <div class="stat-pill"><span class="stat-title">Статус:</span> <b id="statStatus">Готов к поиску</b></div>
+        <div class="stat-pill"><span class="stat-title">Сеть дорог:</span> <b id="statSource">Загрузка...</b></div>
         <div class="stat-pill"><span class="stat-title">Проверено узлов:</span> <b id="statVisited">0</b></div>
         <div class="stat-pill"><span class="stat-title">Фронтир (очередь):</span> <b id="statFrontier">0</b></div>
         <div class="stat-pill"><span class="stat-title">Длина маршрута:</span> <b id="statDistance">—</b></div>
@@ -190,6 +201,42 @@
         <div class="map-hint" id="mapHint">💡 Кликните по карте или перетащите маркеры A и B для выбора точек</div>
       </div>
 
+      <!-- Режим «Битва алгоритмов» (Benchmark Card) -->
+      <div class="benchmark-card" id="benchmarkCard" style="display:none;">
+        <div class="bmark-head">
+          <div class="bmark-title">
+            <span class="bmark-badge">⚡ Битва алгоритмов</span>
+            <h3>Сравнение 4 алгоритмов на реальной сетке дорог</h3>
+          </div>
+          <div class="bmark-actions">
+            <button class="btn btn-sm" id="btnShowAllPaths">🌐 Все 4 пути на карте</button>
+            <button class="btn btn-sm" id="btnCloseBenchmark">✕ Закрыть</button>
+          </div>
+        </div>
+        <p class="bmark-summary" id="bmarkSummary"></p>
+        <div class="bmark-table-wrap">
+          <table class="bmark-table" id="bmarkTable">
+            <thead>
+              <tr>
+                <th>Алгоритм</th>
+                <th>Исследовано узлов</th>
+                <th>Длина пути</th>
+                <th>Оптимальность</th>
+                <th>Фронтир (память)</th>
+                <th>Время (мс)</th>
+                <th>Карта</th>
+              </tr>
+            </thead>
+            <tbody id="bmarkTableBody"></tbody>
+          </table>
+        </div>
+        <div class="bmark-bars-wrap">
+          <div class="bmark-bars-title">Сравнение числа исследованных узлов графа (меньше — эффективнее):</div>
+          <div class="bmark-bars" id="bmarkBars"></div>
+        </div>
+        <div class="bmark-hint">💡 Нажмите на строку алгоритма в таблице, чтобы показать его маршрут на карте</div>
+      </div>
+
       <!-- Описание выбранного алгоритма -->
       <div class="algo-info-card" id="algoInfoCard">
         <h4 id="algoInfoTitle">★ Алгоритм A* (A-Star Search)</h4>
@@ -197,7 +244,7 @@
         <div class="algo-complexity">
           <span class="chip">Оптимальность: <b>Гарантирована</b></span>
           <span class="chip">Временная сложность: <b>O(E + V log V)</b></span>
-          <span class="chip">Эвристика: <b>Евклидово расстояние</b></span>
+          <span class="chip">Эвристика: <b>h(n) × 1.0 (Admissible)</b></span>
         </div>
       </div>
     </div>
