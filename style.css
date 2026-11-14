@@ -536,69 +536,6 @@ h1 span:nth-child(5){animation-delay:.32s}
   text-shadow:0 0 10px var(--pink-glow);
 }
 
-/* Tic-Tac-Toe Board */
-.board{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  width:min(320px,100%);
-}
-
-.board button{
-  aspect-ratio:1;
-  border:0;
-  border-radius:16px;
-  background:var(--navy2);
-  color:#fff;
-  font:800 clamp(32px,8vw,44px) 'Unbounded',sans-serif;
-  cursor:pointer;
-  transition:all .18s ease;
-  touch-action:manipulation;
-  box-shadow:inset 0 2px 0 rgba(255,255,255,0.1),0 4px 10px rgba(0,0,0,0.25);
-}
-.board button:hover:not(:disabled){
-  background:var(--navy3);
-  transform:scale(1.04);
-  box-shadow:0 6px 16px rgba(0,0,0,0.3);
-}
-.board button:active:not(:disabled){
-  transform:scale(0.96);
-}
-.board button.o{
-  color:var(--pink);
-  text-shadow:0 0 14px var(--pink-glow);
-}
-.board button:disabled{
-  cursor:default;
-}
-
-/* Winning cell pulse animation */
-.board button.win-cell{
-  background:#261238!important;
-  border:2px solid var(--pink);
-  box-shadow:0 0 20px var(--pink-glow);
-  animation:winPulse .7s ease-in-out infinite alternate;
-}
-@keyframes winPulse{
-  from{transform:scale(1)}
-  to{transform:scale(1.06)}
-}
-
-.sc{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
-.sc .chip{
-  background:var(--navy2);
-}
-.sc b{
-  color:var(--pink);
-  font-weight:800;
-  margin-left:4px;
-}
-
 /* Memory Game Board */
 .mem{
   display:grid;
@@ -973,6 +910,118 @@ iframe{
 /* ========================================================
    Crew / Creators Section
    ======================================================== */
+
+/* ========================================================
+   Course Map Section — «Карта курса ИИ»
+   ======================================================== */
+.coursemap-sec{
+  padding:clamp(60px,8vw,100px) 5vw;
+  background:linear-gradient(180deg,var(--navy) 0%,#0d1740 100%);
+  position:relative;
+}
+.coursemap-sec .sec-head{
+  margin-bottom:40px;
+}
+.coursemap-sec .tag{
+  margin-bottom:12px;
+}
+.coursemap-sec p.lead{
+  opacity:.75;
+  max-width:640px;
+  font-size:clamp(15px,1.8vw,17px);
+}
+
+.cmap-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:18px;
+}
+
+.cmap-card{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  background:var(--navy2);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:18px;
+  padding:24px 22px 20px;
+  text-decoration:none;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+  transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;
+  cursor:pointer;
+}
+.cmap-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(200px circle at var(--px,50%) var(--py,50%),rgba(76,201,240,0.12),transparent 70%);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s ease;
+}
+.cmap-card:hover::before{
+  opacity:1;
+}
+.cmap-card:hover{
+  transform:translateY(-6px);
+  border-color:var(--cyan);
+  box-shadow:0 12px 28px rgba(0,0,0,0.35),0 0 0 1px var(--cyan);
+}
+
+.cmap-icon{
+  width:46px;
+  height:46px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.06);
+  display:grid;
+  place-items:center;
+  font-size:22px;
+  flex-shrink:0;
+  transition:all .3s cubic-bezier(0.2,1.4,0.4,1);
+}
+.cmap-card:hover .cmap-icon{
+  background:rgba(76,201,240,0.18);
+  transform:scale(1.1) rotate(4deg);
+}
+
+.cmap-card h3{
+  font:700 16px/1.3 'Unbounded',sans-serif;
+  color:#fff;
+}
+.cmap-card p{
+  font-size:13.5px;
+  line-height:1.45;
+  color:rgba(255,255,255,0.6);
+  flex:1;
+}
+
+.cmap-where{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:4px;
+}
+.cmap-tag{
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:8px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.02em;
+  background:rgba(76,201,240,0.12);
+  color:var(--cyan);
+  border:1px solid rgba(76,201,240,0.25);
+  white-space:nowrap;
+}
+.cmap-card:hover .cmap-tag{
+  background:rgba(76,201,240,0.2);
+  border-color:rgba(76,201,240,0.45);
+}
+
+/* ======================================================== */
+
 .crew{
   padding:clamp(60px,8vw,100px) 5vw;
   background:var(--navy);
@@ -1244,18 +1293,14 @@ footer b{
     border-radius:20px;
   }
   
-  .board{
-    gap:8px;
-  }
-  .board button{
-    border-radius:12px;
-  }
-  
   .mem{
     gap:8px;
   }
   
   .grid{
+    grid-template-columns:1fr;
+  }
+  .cmap-grid{
     grid-template-columns:1fr;
   }
   .pc{

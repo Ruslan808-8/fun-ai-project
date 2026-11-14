@@ -77,14 +77,6 @@ class SoundFX {
     this.playTone(620, 'sine', 0.06, 0.05);
   }
 
-  playMove(isAi = false) {
-    if (isAi) {
-      this.playTone(340, 'triangle', 0.12, 0.09);
-    } else {
-      this.playTone(820, 'sine', 0.08, 0.07);
-    }
-  }
-
   playFlip() {
     this.playTone(480, 'sine', 0.07, 0.06);
   }
@@ -102,12 +94,6 @@ class SoundFX {
     notes.forEach((f, i) => {
       setTimeout(() => this.playTone(f, 'triangle', 0.28, 0.1), i * 110);
     });
-  }
-
-  playTie() {
-    if (this.muted) return;
-    this.playTone(440, 'sine', 0.14, 0.07);
-    setTimeout(() => this.playTone(554.37, 'sine', 0.2, 0.07), 100);
   }
 
   playRadarTick(step = 0) {
@@ -395,7 +381,7 @@ mem();
 /* ========================================================
    9. Interactive 3D Card Hover on Desktop
    ======================================================== */
-const cards = $$('.pc[data-tilt]');
+const cards = $$('.pc[data-tilt], .cmap-card[data-tilt]');
 cards.forEach(card => {
   card.addEventListener('mousemove', e => {
     if (window.matchMedia('(pointer: coarse)').matches) return;
@@ -416,6 +402,23 @@ cards.forEach(card => {
 
   card.addEventListener('mouseleave', () => {
     card.style.transform = '';
+  });
+});
+
+// Course Map Cards Click Navigation (Interactive Matrix)
+$$('.cmap-card').forEach(card => {
+  card.addEventListener('click', () => {
+    sfx.playTap();
+    const targetGame = card.dataset.game;
+    const targetAlgo = card.dataset.algo;
+    if (targetGame !== undefined) {
+      const tab = $(`#tabs .tab[data-g="${targetGame}"]`);
+      if (tab) tab.click();
+    }
+    if (targetAlgo) {
+      const btn = $(`#algoSelector .algo-btn[data-algo="${targetAlgo}"]`);
+      if (btn) btn.click();
+    }
   });
 });
 

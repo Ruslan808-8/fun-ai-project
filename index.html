@@ -23,6 +23,7 @@
       <div class="nav-links">
         <a href="#games">Игры</a>
         <a href="#navigator">ИИ Навигатор</a>
+        <a href="#coursemap">Карта курса</a>
         <a href="#crew">Команда</a>
       </div>
       <button class="snd-toggle" id="sndToggle" aria-label="Переключить звук" title="Включить / выключить звук">
@@ -46,6 +47,7 @@
     <div class="cta">
       <a class="btn p" href="#games">Играть →</a>
       <a class="btn" href="#navigator">ИИ Навигатор (GPS) ↗</a>
+      <a class="btn" href="#coursemap">Карта курса ✦</a>
       <a class="btn" href="#crew">Создатели</a>
     </div>
   </div>
@@ -121,7 +123,6 @@
           <span class="chip">Байесовский вывод</span>
           <span class="chip">Поиск пути A*</span>
           <span class="chip">Вероятности</span>
-          <a class="chip" style="color:#fff; text-decoration:none;" href="https://claude.ai/artifact/3GYS1jaH7yNvwoczVXEXGB" target="_blank" rel="noopener">Оригинал ↗</a>
         </div>
       </div>
       <div class="iframe-wrap">
@@ -199,6 +200,93 @@
           <span class="chip">Эвристика: <b>Евклидово расстояние</b></span>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- КАРТА КУРСА ИИ -->
+<section class="coursemap-sec" id="coursemap">
+  <div class="container">
+    <div class="sec-head">
+      <div class="tag">Основы ИИ · Покрытие тем · 2026</div>
+      <h2 class="rv">Карта курса ИИ</h2>
+      <p class="lead rv">Каждая тема из курса «Основы искусственного интеллекта» реализована в одном или нескольких интерактивных модулях сайта. Кликните по карточке, чтобы перейти к демо.</p>
+    </div>
+
+    <div class="cmap-grid">
+      <a href="#navigator" class="cmap-card rv" data-tilt data-algo="bfs">
+        <div class="cmap-icon">🔍</div>
+        <h3>BFS / DFS</h3>
+        <p>Поиск в ширину и в глубину — классические алгоритмы обхода графов</p>
+        <div class="cmap-where">
+          <span class="cmap-tag">ИИ-Навигатор</span>
+        </div>
+      </a>
+
+      <a href="#navigator" class="cmap-card rv" data-tilt data-algo="ucs">
+        <div class="cmap-icon">◆</div>
+        <h3>UCS / Дейкстра</h3>
+        <p>Поиск кратчайшего пути с учётом веса рёбер графа</p>
+        <div class="cmap-where">
+          <span class="cmap-tag">ИИ-Навигатор</span>
+        </div>
+      </a>
+
+      <a href="#navigator" class="cmap-card rv" data-tilt data-algo="astar">
+        <div class="cmap-icon">★</div>
+        <h3>A* (Эвристика)</h3>
+        <p>Информированный поиск с функцией f(n) = g(n) + h(n) — золотой стандарт навигации</p>
+        <div class="cmap-where">
+          <span class="cmap-tag">ИИ-Навигатор</span>
+          <span class="cmap-tag">Охотник за кладом</span>
+        </div>
+      </a>
+
+      <a href="#games" class="cmap-card rv" data-tilt data-game="2">
+        <div class="cmap-icon">📊</div>
+        <h3>Байесовский фильтр</h3>
+        <p>Обновление вероятностей по зашумлённым показаниям сенсоров «горячо / тепло / холодно»</p>
+        <div class="cmap-where">
+          <span class="cmap-tag">Охотник за кладом</span>
+        </div>
+      </a>
+
+      <a href="#games" class="cmap-card rv" data-tilt data-game="0">
+        <div class="cmap-icon">📡</div>
+        <h3>HMM & Particle Filter</h3>
+        <p>200 частиц на сигнатуру: прогноз, взвешивание по шумным сенсорам и обзору, ресэмплинг</p>
+        <div class="cmap-where">
+          <span class="cmap-tag">Pulse Protocol FPS</span>
+        </div>
+      </a>
+
+      <a href="#games" class="cmap-card rv" data-tilt data-game="0">
+        <div class="cmap-icon">🤖</div>
+        <h3>MDP & Value Iteration</h3>
+        <p>Автопилот станции решает Q(s,a) = R + γ·Σ P·V(s′) по модели с 4 действиями и ползунками награды</p>
+        <div class="cmap-where">
+          <span class="cmap-tag">Pulse Protocol FPS</span>
+        </div>
+      </a>
+
+      <a href="#games" class="cmap-card rv" data-tilt data-game="0">
+        <div class="cmap-icon">🎯</div>
+        <h3>Стохастика & Шум</h3>
+        <p>Сенсоры врут в 30% случаев, турель попадает в 25%, паразиты ходят случайно — стохастические модели вокруг</p>
+        <div class="cmap-where">
+          <span class="cmap-tag">Pulse Protocol FPS</span>
+          <span class="cmap-tag">Охотник за кладом</span>
+        </div>
+      </a>
+
+      <a href="#games" class="cmap-card rv" data-tilt data-game="1">
+        <div class="cmap-icon">🧠</div>
+        <h3>Сопоставление и эмбеддинги</h3>
+        <p>Задача поиска пар — аналог vectorDB similarity search и семантического сравнения в ML</p>
+        <div class="cmap-where">
+          <span class="cmap-tag">Игра «Память»</span>
+        </div>
+      </a>
     </div>
   </div>
 </section>
