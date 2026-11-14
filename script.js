@@ -7,7 +7,7 @@ const $$ = s => document.querySelectorAll(s);
    ======================================================== */
 const mqEl = $('#mq');
 if (mqEl) {
-  mqEl.innerHTML = ('QAIRU ✦ GAMES ✦ MINIMAX ✦ AI NAVIGATOR ✦ A* ✦ BFS ✦ DFS ✦ UCS ✦ ').repeat(12);
+  mqEl.innerHTML = ('QAIRU ✦ GAMES ✦ PULSE PROTOCOL FPS ✦ HMM & MDP ✦ AI NAVIGATOR ✦ A* ✦ BFS ✦ DFS ✦ UCS ✦ ').repeat(12);
 }
 
 /* ========================================================
@@ -207,8 +207,8 @@ function runConfetti() {
    ======================================================== */
 const GAME_DESCRIPTIONS = [
   {
-    title: "✕ Крестики-нолики vs Minimax",
-    desc: "Классическая теория игр и дерево решений. Алгоритм Minimax просчитывает все возможные исходы партии на 9 шагов вперёд и гарантирует невозможность поражения. Сможешь свести партию вничью?"
+    title: "⚡ Pulse Protocol FPS (HMM & MDP)",
+    desc: "3D-шутер от первого лица с искусственным интеллектом: фильтр частиц на скрытых марковских моделях (HMM) для отслеживания невидимых угроз по шумным сенсорам и алгоритм Value Iteration (MDP) для автономного автопилота станции."
   },
   {
     title: "◆ Нейро-память & Ассоциации",
@@ -297,147 +297,9 @@ if (backToTopBtn) {
 }
 
 /* ========================================================
-   7. Tic-Tac-Toe vs Minimax (Unbeatable AI)
+   7. Pulse Protocol FPS (HMM Particle Filter + MDP)
+   Standalone 3D Raycasting Game loaded in Stage 0 iframe
    ======================================================== */
-const W = [
-  [0, 1, 2], [3, 4, 5], [6, 7, 8],
-  [0, 3, 6], [1, 4, 7], [2, 5, 8],
-  [0, 4, 8], [2, 4, 6]
-];
-
-let B = Array(9).fill(null);
-let sc = [0, 0, 0];
-let over = false;
-let aiThinking = false;
-let winCombo = null;
-
-function checkWin(b) {
-  for (const [a, c, d] of W) {
-    if (b[a] && b[a] === b[c] && b[a] === b[d]) {
-      return { winner: b[a], combo: [a, c, d] };
-    }
-  }
-  if (!b.includes(null)) {
-    return { winner: 'D', combo: null };
-  }
-  return null;
-}
-
-function mm(b, p) {
-  const w = checkWin(b);
-  if (w) {
-    return { s: w.winner === 'O' ? 1 : w.winner === 'X' ? -1 : 0 };
-  }
-  let best = { s: p === 'O' ? -2 : 2 };
-  for (let i = 0; i < 9; i++) {
-    if (!b[i]) {
-      b[i] = p;
-      const r = mm(b, p === 'O' ? 'X' : 'O');
-      b[i] = null;
-      if (p === 'O' ? r.s > best.s : r.s < best.s) {
-        best = { s: r.s, m: i };
-      }
-    }
-  }
-  return best;
-}
-
-function drawT() {
-  const boardEl = $('#tb');
-  if (!boardEl) return;
-  boardEl.innerHTML = B.map((v, i) => {
-    const isWinCell = winCombo && winCombo.includes(i);
-    const classes = [
-      v === 'O' ? 'o' : '',
-      isWinCell ? 'win-cell' : ''
-    ].filter(Boolean).join(' ');
-    
-    return `<button data-i="${i}" class="${classes}" ${v || over || aiThinking ? 'disabled' : ''} aria-label="Клетка ${i + 1}: ${v || 'пусто'}">${v === 'X' ? '✕' : v === 'O' ? '○' : ''}</button>`;
-  }).join('');
-}
-
-function end() {
-  const res = checkWin(B);
-  if (!res) return false;
-  
-  over = true;
-  winCombo = res.combo;
-  const w = res.winner;
-  const k = w === 'X' ? 0 : w === 'D' ? 1 : 2;
-  sc[k]++;
-  ['w1', 'w2', 'w3'].forEach((id, i) => {
-    const el = $('#' + id);
-    if (el) el.textContent = sc[i];
-  });
-
-  const ts = $('#ts');
-  if (w === 'X') {
-    ts.innerHTML = '<i>Ты победил! Невероятно!</i>';
-    sfx.playWin();
-    triggerConfetti(90);
-  } else if (w === 'D') {
-    ts.innerHTML = '<i>Ничья! Ты устоял против Minimax!</i>';
-    sfx.playTie();
-    triggerConfetti(50);
-  } else {
-    ts.innerHTML = 'Победил <i>ИИ (Minimax)</i>';
-    sfx.playMove(true);
-  }
-
-  drawT();
-  return true;
-}
-
-function ttt() {
-  sfx.playTap();
-  B = Array(9).fill(null);
-  over = false;
-  aiThinking = false;
-  winCombo = null;
-  const ts = $('#ts');
-  if (ts) ts.textContent = 'Твой ход';
-  drawT();
-}
-
-const tbEl = $('#tb');
-if (tbEl) {
-  tbEl.onclick = e => {
-    const b = e.target.closest('button');
-    if (!b || over || aiThinking) return;
-    const idx = parseInt(b.dataset.i, 10);
-    if (B[idx]) return;
-
-    B[idx] = 'X';
-    sfx.playMove(false);
-    drawT();
-
-    if (end()) return;
-
-    aiThinking = true;
-    const ts = $('#ts');
-    if (ts) ts.innerHTML = '<i>ИИ вычисляет ход...</i>';
-    drawT();
-
-    setTimeout(() => {
-      if (!over) {
-        const bestMove = mm(B, 'O').m;
-        if (bestMove !== undefined && bestMove !== null) {
-          B[bestMove] = 'O';
-          sfx.playMove(true);
-        }
-        aiThinking = false;
-        if (!end()) {
-          if (ts) ts.textContent = 'Твой ход';
-          drawT();
-        }
-      } else {
-        aiThinking = false;
-      }
-    }, 180);
-  };
-}
-
-ttt();
 
 /* ========================================================
    8. Memory Game
@@ -1228,12 +1090,18 @@ $('#btnClearSearch')?.addEventListener('click', () => {
 // GPS Geolocation Handler
 $('#btnGps')?.addEventListener('click', () => {
   sfx.playTap();
+  const statusEl = $('#statStatus');
   if (!navigator.geolocation) {
-    alert('Ваш браузер не поддерживает GPS геолокацию.');
+    if (statusEl) {
+      statusEl.textContent = 'GPS не поддерживается браузером';
+      statusEl.style.color = '#ff4d6d';
+    }
     return;
   }
-  const statusEl = $('#statStatus');
-  if (statusEl) statusEl.textContent = 'Запрос GPS...';
+  if (statusEl) {
+    statusEl.textContent = 'Запрос GPS геолокации...';
+    statusEl.style.color = 'var(--yellow)';
+  }
 
   navigator.geolocation.getCurrentPosition(
     pos => {
@@ -1249,13 +1117,16 @@ $('#btnGps')?.addEventListener('click', () => {
       mapInstance.setView(startCoords, 14);
       buildStreetNetwork();
       if (statusEl) {
-        statusEl.textContent = 'GPS получен!';
+        statusEl.textContent = 'GPS получен! Точка А установлена';
         statusEl.style.color = 'var(--green)';
       }
     },
     err => {
-      alert(`Не удалось определить GPS (${err.message}). Используются координаты по умолчанию.`);
-      resetStatsUI();
+      console.warn('GPS error:', err);
+      if (statusEl) {
+        statusEl.textContent = 'GPS недоступен. Используются стандартные координаты';
+        statusEl.style.color = 'var(--yellow)';
+      }
     },
     { enableHighAccuracy: true, timeout: 8000 }
   );

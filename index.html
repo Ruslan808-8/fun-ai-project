@@ -57,36 +57,35 @@
 <section class="games" id="games">
   <div class="container">
     <div class="sec-head" id="gamesSecHead">
-      <h2 class="rv" id="gameHeadTitle">✕ Крестики-нолики vs Minimax</h2>
-      <p class="lead rv" id="gameHeadDesc">Классическая теория игр и дерево решений. Алгоритм Minimax просчитывает все возможные исходы партии на 9 шагов вперёд и гарантирует невозможность поражения. Сможешь свести партию вничью?</p>
+      <h2 class="rv" id="gameHeadTitle">⚡ Pulse Protocol FPS (HMM & MDP)</h2>
+      <p class="lead rv" id="gameHeadDesc">3D-шутер от первого лица с искусственным интеллектом: фильтр частиц на скрытых марковских моделях (HMM) для отслеживания невидимых угроз по шумным сенсорам и алгоритм Value Iteration (MDP) для автономного автопилота станции.</p>
     </div>
 
     <div class="tabs" id="tabs" role="tablist">
-      <button class="tab on" data-g="0" role="tab" aria-selected="true">✕ Крестики-нолики</button>
+      <button class="tab on" data-g="0" role="tab" aria-selected="true">⚡ Pulse Protocol FPS</button>
       <button class="tab" data-g="1" role="tab" aria-selected="false">◆ Память</button>
       <button class="tab" data-g="2" role="tab" aria-selected="false">★ Охотник за кладом</button>
     </div>
 
-    <!-- Игра 1: Крестики-нолики -->
-    <div class="stage on" id="stage-0">
+    <!-- Игра 1: Pulse Protocol FPS -->
+    <div class="stage wide on" id="stage-0">
       <div class="info">
-        <h3>Крестики-нолики vs ИИ</h3>
-        <p>Ты играешь за ✕, ИИ за ○. Алгоритм Minimax перебирает все возможные ходы и никогда не проигрывает. Сможешь свести партию вничью?</p>
+        <div class="hunter-head">
+          <div>
+            <h3>Pulse Protocol FPS</h3>
+            <p>Научно-фантастический 3D FPS с искусственным интеллектом. Невидимые паразиты атакуют станцию. Отслеживай их положение через фильтр частиц (HMM) по шумным сенсорам и лучу фонаря. Автопилот станции на базе MDP (Value Iteration) распределяет энергию, активирует щиты и турели. Управление: WASD ходить, мышь / стрелки поворот, клик / Пробел огонь, R ремонт, P пауза.</p>
+          </div>
+          <a class="btn btn-sm" href="pulse.html" target="_blank" rel="noopener">На весь экран ↗</a>
+        </div>
         <div class="chips-list">
-          <span class="chip">Minimax</span>
-          <span class="chip">Перебор ходов</span>
-          <span class="chip">Теория игр</span>
+          <span class="chip">Скрытые марковские модели (HMM)</span>
+          <span class="chip">Фильтр частиц (Particle Filter)</span>
+          <span class="chip">MDP & Value Iteration</span>
+          <span class="chip">Raycasting 3D FPS</span>
         </div>
       </div>
-      <div class="play">
-        <div class="st" id="ts">Твой ход</div>
-        <div class="board" id="tb"></div>
-        <div class="sc">
-          <span class="chip">Ты: <b id="w1">0</b></span>
-          <span class="chip">Ничьи: <b id="w2">0</b></span>
-          <span class="chip">ИИ: <b id="w3">0</b></span>
-        </div>
-        <button class="btn p" onclick="ttt()">Заново</button>
+      <div class="iframe-wrap">
+        <iframe title="Pulse Protocol FPS" sandbox="allow-scripts allow-same-origin allow-pointer-lock" loading="lazy" src="pulse.html"></iframe>
       </div>
     </div>
 
