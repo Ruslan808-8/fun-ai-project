@@ -380,7 +380,32 @@
     <span>Основы искусственного интеллекта · 2026</span>
   </div>
 </footer>
+<!-- Виджет техподдержки -->
+<button class="support-fab" id="supportOpenBtn" aria-label="Открыть техподдержку">
+  💬 <span>Поддержка</span>
+</button>
 
+<div class="support-modal" id="supportModal" hidden>
+  <div class="support-box" role="dialog" aria-modal="true" aria-labelledby="supportTitle">
+    <div class="support-head">
+      <h3 id="supportTitle">Техподдержка QAIRU</h3>
+      <button type="button" class="support-close" id="supportCloseBtn" aria-label="Закрыть">✕</button>
+    </div>
+    <p class="support-sub">Нашли баг в игре или есть вопрос? Напишите нам — сообщение сразу улетит команде в Telegram.</p>
+    <form id="supportForm" class="support-form">
+      <label>
+        <span>Ваш Telegram или Email</span>
+        <input type="text" id="supContact" placeholder="@username или name@mail.com" required maxlength="100">
+      </label>
+      <label>
+        <span>Опишите проблему или вопрос</span>
+        <textarea id="supMessage" rows="4" placeholder="Например: на 3 уровне не нажимается кнопка..." required maxlength="1500"></textarea>
+      </label>
+      <div class="support-status" id="supStatus"></div>
+      <button type="submit" class="btn p support-submit" id="supSubmitBtn">Отправить в Telegram ↗</button>
+    </form>
+  </div>
+</div>
 <button class="back-to-top" id="backToTop" aria-label="Вернуться наверх" title="Наверх">↑</button>
 
 <script src="script.js"></script>

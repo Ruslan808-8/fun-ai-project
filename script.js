@@ -1795,3 +1795,76 @@ if (document.readyState === 'complete') {
 } else {
   window.addEventListener('load', initAiMap);
 }
+/* ========================================================
+11. Виджет техподдержки (отправка в Telegram через Flask)
+   ======================================================== */
+(() => {
+  const openBtn = $('#supportOpenBtn');
+  const closeBtn = $('#supportCloseBtn');
+  const modal = $('#supportModal');
+  const form = $('#supportForm');
+  const statusEl = $('#supStatus');
+  const submitBtn = $('#supSubmitBtn');
+
+  if (!openBtn || !modal || !form) return;
+
+  const openModal = () => {
+    sfx.playTap();
+    modal.hidden = false;
+    statusEl.textContent = '';
+    statusEl.className = 'support-status';
+    $('#supContact')?.focus();
+  };
+
+  const closeModal = () => {
+    sfx.playTap();
+    modal.hidden = true;
+  };
+
+  openBtn.addEventListener('click', openModal);
+  closeBtn?.addEventListener('click', closeModal);
+  modal.addEventListener('click', e => {
+    if (e.target === modal) closeModal();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !modal.hidden) closeModal();
+  });
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const contact = $('#supContact').value.trim();
+    const message = $('#supMessage').value.trim();
+    if (!contact || !message) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Отправка...';
+    statusEl.textContent = '';
+    statusEl.className = 'support-status';
+
+    try {
+      const res = await fetch('/api/support', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contact, message })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.ok) {
+        sfx.playWin();
+        statusEl.textContent = '✓ Сообщение отправлено! Скоро ответим.';
+        statusEl.classList.add('ok');
+        form.reset();
+        setTimeout(() => { modal.hidden = true; }, 1600);
+      } else {
+        statusEl.textContent = data.error || 'Ошибка отправки.';
+        statusEl.classList.add('err');
+      }
+    } catch (_) {
+      statusEl.textContent = 'Сервер временно недоступен. Попробуйте ещё раз.';
+      statusEl.classList.add('err');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Отправить в Telegram ↗';
+    }
+  });
+})();
