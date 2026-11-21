@@ -65,8 +65,7 @@
 
     <div class="tabs" id="tabs" role="tablist">
       <button class="tab on" data-g="0" role="tab" aria-selected="true">⚡ Pulse Protocol FPS</button>
-      <button class="tab" data-g="1" role="tab" aria-selected="false">◆ Память</button>
-      <button class="tab" data-g="2" role="tab" aria-selected="false">★ Охотник за кладом</button>
+      <button class="tab" data-g="1" role="tab" aria-selected="false">★ Охотник за кладом</button>
     </div>
 
     <!-- Игра 1: Pulse Protocol FPS -->
@@ -91,26 +90,8 @@
       </div>
     </div>
 
-    <!-- Игра 2: Память -->
-    <div class="stage" id="stage-1">
-      <div class="info">
-        <h3>Память</h3>
-        <p>Найди все пары карточек за минимум ходов. Тренирует внимание, а подобные задачи решают и модели ИИ при поиске совпадений и векторном сравнении.</p>
-        <div class="chips-list">
-          <span class="chip">8 пар</span>
-          <span class="chip">Счётчик ходов</span>
-          <span class="chip" id="bestScoreChip">Рекорд: —</span>
-        </div>
-      </div>
-      <div class="play">
-        <div class="st" id="ms">Ходов: 0</div>
-        <div class="mem" id="mb"></div>
-        <button class="btn p" onclick="mem()">Перемешать</button>
-      </div>
-    </div>
-
-    <!-- Игра 3: Охотник за кладом -->
-    <div class="stage wide" id="stage-2">
+    <!-- Игра 2: Охотник за кладом -->
+    <div class="stage wide" id="stage-1">
       <div class="info">
         <div class="hunter-head">
           <div>
@@ -289,7 +270,7 @@
         </div>
       </a>
 
-      <a href="#games" class="cmap-card rv" data-tilt data-game="2">
+      <a href="#games" class="cmap-card rv" data-tilt data-game="1">
         <div class="cmap-icon">📊</div>
         <h3>Байесовский фильтр</h3>
         <p>Обновление вероятностей по зашумлённым показаниям сенсоров «горячо / тепло / холодно»</p>
@@ -325,15 +306,6 @@
           <span class="cmap-tag">Охотник за кладом</span>
         </div>
       </a>
-
-      <a href="#games" class="cmap-card rv" data-tilt data-game="1">
-        <div class="cmap-icon">🧠</div>
-        <h3>Сопоставление и эмбеддинги</h3>
-        <p>Задача поиска пар — аналог vectorDB similarity search и семантического сравнения в ML</p>
-        <div class="cmap-where">
-          <span class="cmap-tag">Игра «Память»</span>
-        </div>
-      </a>
     </div>
   </div>
 </section>
@@ -350,13 +322,13 @@
         <div class="av">BT</div>
         <h3>Batyr Tokenuly</h3>
         <small>QAIRU</small>
-        <span class="badge">Team Lead & Backend</span>
+        <span class="badge">Team Lead & Frontend</span>
       </div>
       <div class="pc rv" data-tilt>
         <div class="av">AI</div>
         <h3>Aitmukhanbetov Iasin</h3>
         <small>QAIRU</small>
-        <span class="badge">Machine Learning</span>
+        <span class="badge">Game dev</span>
       </div>
       <div class="pc rv" data-tilt>
         <div class="av">RT</div>
@@ -368,7 +340,7 @@
         <div class="av">DZ</div>
         <h3>Daulet Zhigerkhan</h3>
         <small>QAIRU</small>
-        <span class="badge">Game Engine & A*</span>
+        <span class="badge">Quality Assurance Engineer</span>
       </div>
     </div>
   </div>

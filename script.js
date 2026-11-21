@@ -197,10 +197,6 @@ const GAME_DESCRIPTIONS = [
     desc: "3D-шутер от первого лица с искусственным интеллектом: фильтр частиц на скрытых марковских моделях (HMM) для отслеживания невидимых угроз по шумным сенсорам и алгоритм Value Iteration (MDP) для автономного автопилота станции."
   },
   {
-    title: "◆ Нейро-память & Ассоциации",
-    desc: "Тренировка зрительного внимания и сопоставления образов. Аналогичные алгоритмы векторного сходства лежат в основе эмбеддингов, векторных баз данных и семантического поиска в современных моделях ИИ."
-  },
-  {
     title: "★ Охотник за кладом (Bayes & A*)",
     desc: "Интерактивная симуляция робототехники: Байесовский вероятностный фильтр обновляет карту правдоподобия с каждым шумящим показанием сенсора, пока охранник преследует робота по алгоритму A*."
   }
@@ -282,98 +278,7 @@ if (backToTopBtn) {
 }
 
 /* ========================================================
-8. Memory Game
-   ======================================================== */
-let first = null;
-let lock = false;
-let mv = 0;
-let pairs = 0;
-
-function updateBestScoreDisplay() {
-  const chip = $('#bestScoreChip');
-  if (!chip) return;
-  const best = localStorage.getItem('qairu_mem_best');
-  chip.textContent = best ? `Рекорд: ${best} ходов` : 'Рекорд: —';
-}
-
-function mem() {
-  sfx.playTap();
-  const s = ['◆', '●', '▲', '★', '♥', '♣', '✦', '☾'];
-  const a = [...s, ...s].sort(() => Math.random() - 0.5);
-  mv = 0;
-  pairs = 0;
-  first = null;
-  lock = false;
-  const ms = $('#ms');
-  if (ms) ms.textContent = 'Ходов: 0';
-  updateBestScoreDisplay();
-
-  const mb = $('#mb');
-  if (mb) {
-    mb.innerHTML = a.map(x => `
-      <button class="card" data-s="${x}" aria-label="Карточка">
-        <div>
-          <span class="a">?</span>
-          <span class="b">${x}</span>
-        </div>
-      </button>
-    `).join('');
-  }
-}
-
-const mbEl = $('#mb');
-if (mbEl) {
-  mbEl.onclick = e => {
-    const c = e.target.closest('.card');
-    if (!c || lock || c.classList.contains('f') || c.classList.contains('m')) return;
-    
-    sfx.playFlip();
-    c.classList.add('f');
-
-    if (!first) {
-      first = c;
-      return;
-    }
-
-    mv++;
-    const ms = $('#ms');
-    if (ms) ms.textContent = 'Ходов: ' + mv;
-
-    if (first.dataset.s === c.dataset.s) {
-      sfx.playMatch();
-      first.classList.add('m');
-      c.classList.add('m');
-      first = null;
-      pairs++;
-
-      if (pairs === 8) {
-        sfx.playWin();
-        triggerConfetti(100);
-        if (ms) ms.innerHTML = `<i>Победа за ${mv} ходов! 🎉</i>`;
-
-        const oldBest = localStorage.getItem('qairu_mem_best');
-        if (!oldBest || mv < parseInt(oldBest, 10)) {
-          localStorage.setItem('qairu_mem_best', mv.toString());
-          updateBestScoreDisplay();
-        }
-      }
-    } else {
-      lock = true;
-      const f = first;
-      first = null;
-      setTimeout(() => {
-        f.classList.remove('f');
-        c.classList.remove('f');
-        lock = false;
-      }, 750);
-    }
-  };
-}
-
-mem();
-
-/* ========================================================
-9. Interactive 3D Card Hover on Desktop
+8. Interactive 3D Card Hover on Desktop
    ======================================================== */
 const cards = $$('.pc[data-tilt], .cmap-card[data-tilt]');
 cards.forEach(card => {
