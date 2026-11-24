@@ -1,0 +1,3105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Тотализатор алгоритмов // Гонка со ставками и биомами — QAIRU 2026</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #070d1e;
+      --bg-card: #0d1733;
+      --bg-panel: #111d42;
+      --bg-accent: #172658;
+      --border: #223570;
+      --border-bright: #3b549f;
+      --navy: #0a1236;
+      --pink: #ff2e93;
+      --pink-glow: rgba(255, 46, 147, 0.45);
+      --cyan: #4cc9f0;
+      --cyan-glow: rgba(76, 201, 240, 0.45);
+      --yellow: #ffc145;
+      --green: #7cf0b5;
+      --red: #f43f5e;
+      --white: #ffffff;
+      --text-muted: #8ea0cf;
+      --text-dim: #5c6ea0;
+
+      /* Biomes */
+      --ice-color: #67e8f9;
+      --ice-bg: #0e3b43;
+      --grass-color: #4ade80;
+      --grass-bg: #0d3822;
+      --swamp-color: #facc15;
+      --swamp-bg: #422006;
+      --wall-color: #64748b;
+      --wall-bg: #1e293b;
+
+      /* Algorithms */
+      --color-bfs: #38bdf8;
+      --color-dfs: #fb923c;
+      --color-dijkstra: #4ade80;
+      --color-astar: #ff2e93;
+      --color-greedy: #c084fc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Ambient cyber grid */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(circle at 50% 10%, rgba(76, 201, 240, 0.08), transparent 50%),
+        radial-gradient(circle at 90% 80%, rgba(255, 46, 147, 0.07), transparent 40%),
+        linear-gradient(rgba(34, 53, 112, 0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 53, 112, 0.15) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header, main, footer, .modal {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Top Navigation Bar */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 24px;
+      background: rgba(13, 23, 51, 0.85);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-logo {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--cyan), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1px;
+    }
+
+    .brand-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255, 193, 69, 0.15);
+      color: var(--yellow);
+      border: 1px solid rgba(255, 193, 69, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .wallet-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(23, 38, 88, 0.7);
+      border: 1px solid var(--border-bright);
+      border-radius: 30px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--yellow);
+      box-shadow: 0 0 16px rgba(255, 193, 69, 0.15);
+    }
+
+    .wallet-btn-add {
+      background: none;
+      border: none;
+      color: var(--cyan);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 2px;
+      transition: transform 0.2s;
+    }
+    .wallet-btn-add:hover {
+      transform: scale(1.2);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: 'Manrope', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid var(--border);
+      background: var(--bg-panel);
+      color: var(--white);
+    }
+    .btn:hover {
+      border-color: var(--cyan);
+      background: var(--bg-accent);
+      transform: translateY(-1px);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--pink), #d91c78);
+      border-color: var(--pink);
+      color: #fff;
+      box-shadow: 0 4px 18px var(--pink-glow);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #ff4aa0, var(--pink));
+      box-shadow: 0 6px 24px rgba(255, 46, 147, 0.6);
+      transform: translateY(-2px);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .btn-defense {
+      background: rgba(124, 240, 181, 0.1);
+      border-color: rgba(124, 240, 181, 0.4);
+      color: var(--green);
+    }
+    .btn-defense:hover {
+      background: rgba(124, 240, 181, 0.2);
+      border-color: var(--green);
+      box-shadow: 0 0 14px rgba(124, 240, 181, 0.2);
+    }
+
+    /* Main Container */
+    .app-container {
+      max-width: 1480px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px 20px 40px;
+      display: grid;
+      gap: 16px;
+      flex: 1;
+    }
+
+    /* Subheader & Live Ticker */
+    .hero-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: linear-gradient(90deg, rgba(17, 29, 66, 0.9), rgba(13, 23, 51, 0.9));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+    }
+
+    .hero-text h1 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(18px, 2.4vw, 24px);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hero-text p {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    /* Live Ticker Commentator */
+    .live-caster {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(7, 13, 30, 0.85);
+      border: 1px solid var(--border-bright);
+      padding: 8px 14px;
+      border-radius: 30px;
+      min-width: 320px;
+      max-width: 520px;
+    }
+    .caster-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--pink);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .caster-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--pink);
+      box-shadow: 0 0 8px var(--pink);
+      animation: casterPulse 1.4s infinite;
+    }
+    @keyframes casterPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+    .caster-msg {
+      font-size: 12px;
+      color: var(--cyan);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Grid Layout: Main Stage vs Betting Panel */
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(360px, 0.8fr);
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 1080px) {
+      .main-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    /* Control Strip */
+    .controls-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+    }
+
+    .strip-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .group-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 4px;
+    }
+
+    .select-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 6px 12px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .select-btn:hover {
+      color: var(--white);
+      border-color: var(--cyan);
+    }
+    .select-btn.active {
+      background: rgba(76, 201, 240, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    /* Biome Palette Brush */
+    .biome-palette {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .biome-brush {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      background: var(--bg-panel);
+      color: var(--text-muted);
+    }
+    .biome-brush.active {
+      border-color: currentColor;
+      box-shadow: 0 0 10px currentColor;
+    }
+    .biome-brush[data-biome="ice"] { color: var(--ice-color); }
+    .biome-brush[data-biome="grass"] { color: var(--grass-color); }
+    .biome-brush[data-biome="swamp"] { color: var(--swamp-color); }
+    .biome-brush[data-biome="wall"] { color: var(--wall-color); }
+    .biome-brush[data-biome="start"] { color: var(--green); }
+    .biome-brush[data-biome="finish"] { color: var(--pink); }
+
+    /* Arena Shell */
+    .arena-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .arena-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 18px;
+      background: rgba(17, 29, 66, 0.6);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .view-switch {
+      display: flex;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2px;
+    }
+    .view-tab {
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .view-tab.active {
+      background: var(--bg-accent);
+      color: var(--white);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .legend-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    /* Race Arena View: Combined Canvas */
+    .canvas-wrap {
+      position: relative;
+      background: #040814;
+      display: grid;
+      place-items: center;
+      padding: 12px;
+      min-height: 480px;
+    }
+
+    #arenaCanvas {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+      cursor: crosshair;
+      image-rendering: pixelated;
+    }
+
+    /* Split-Screen 4-way Arena */
+    .split-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      padding: 12px;
+      background: #040814;
+    }
+    @media (max-width: 680px) {
+      .split-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .split-cell {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .split-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .split-canvas {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+      background: #02040a;
+    }
+
+    /* Progress HUD under Arena */
+    .runners-hud {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border);
+    }
+
+    .runner-pill {
+      background: rgba(13, 23, 51, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .runner-pill.leader {
+      border-color: var(--yellow);
+      box-shadow: 0 0 12px rgba(255, 193, 69, 0.2);
+    }
+    .runner-pill.finished {
+      border-color: var(--green);
+    }
+
+    .runner-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .runner-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .runner-metrics {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+    }
+    .runner-bar-wrap {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .runner-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      transition: width 0.15s;
+    }
+
+    /* Right Column: Betting Station */
+    .betting-station {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .bet-category-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .bet-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+    }
+
+    .bet-algo-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .bet-algo-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-2px);
+    }
+    .bet-algo-card.selected {
+      border-color: var(--cyan);
+      background: rgba(76, 201, 240, 0.12);
+      box-shadow: 0 0 16px rgba(76, 201, 240, 0.2);
+    }
+    .bet-algo-card.selected-energy {
+      border-color: var(--yellow);
+      background: rgba(255, 193, 69, 0.12);
+      box-shadow: 0 0 16px rgba(255, 193, 69, 0.2);
+    }
+
+    .bet-algo-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .bet-algo-desc {
+      font-size: 10px;
+      color: var(--text-dim);
+      line-height: 1.2;
+    }
+    .bet-algo-odds {
+      margin-top: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--yellow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Bet amount picker */
+    .chip-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .bet-chip {
+      padding: 6px 12px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .bet-chip:hover {
+      border-color: var(--yellow);
+      color: var(--yellow);
+    }
+    .bet-chip.active {
+      background: rgba(255, 193, 69, 0.2);
+      border-color: var(--yellow);
+      color: var(--yellow);
+      box-shadow: 0 0 10px rgba(255, 193, 69, 0.2);
+    }
+
+    .bet-summary {
+      background: rgba(7, 13, 30, 0.7);
+      border: 1px dashed var(--border-bright);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+    }
+    .summary-row b {
+      color: var(--white);
+    }
+
+    /* Start / Speed buttons */
+    .race-action-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .speed-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* Modal dialogs */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 8, 20, 0.85);
+      backdrop-filter: blur(8px);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-bright);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(76, 201, 240, 0.1);
+      border-radius: 16px;
+      max-width: 880px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transform: scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-overlay.open .modal-box {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+    }
+    .modal-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .modal-close:hover {
+      color: var(--pink);
+    }
+
+    /* Stats Table */
+    .stats-table-wrap {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      text-align: left;
+    }
+    .stats-table th {
+      background: var(--bg-panel);
+      padding: 10px 14px;
+      color: var(--cyan);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .stats-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(34, 53, 112, 0.4);
+      white-space: nowrap;
+    }
+    .stats-table tr:hover {
+      background: rgba(23, 38, 88, 0.4);
+    }
+    .stats-table tr.winner-row {
+      background: rgba(255, 193, 69, 0.1);
+    }
+
+    .badge-win {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(124, 240, 181, 0.2);
+      color: var(--green);
+      font-weight: 700;
+    }
+    .badge-lose {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(244, 63, 94, 0.2);
+      color: var(--red);
+    }
+
+    /* Podium Card */
+    .podium-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .podium-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+    .podium-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--card-color, var(--cyan));
+    }
+    .podium-badge {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--yellow);
+      font-weight: 700;
+    }
+
+    /* Comparison Bar Charts */
+    .chart-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .chart-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .chart-bar-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 70px;
+      align-items: center;
+      gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+    .chart-bar-bg {
+      height: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .chart-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.6s ease;
+    }
+
+    /* Theory & Defense Guide Accordion */
+    .defense-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .defense-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .defense-q {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--yellow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .defense-a {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .defense-formula {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--green);
+      font-size: 12px;
+    }
+
+    /* Confetti Canvas */
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2000;
+    }
+
+    /* Sound toggle */
+    .snd-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--white);
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .snd-btn.muted {
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Top Navigation -->
+  <header class="top-bar">
+    <a href="index.html" class="brand">
+      <span class="brand-logo">QAIRU</span>
+      <span class="brand-badge">Гран-При Алгоритмов</span>
+    </a>
+
+    <div class="top-actions">
+      <div class="wallet-chip" title="Ваш игровой баланс QAIRU Credits">
+        <span>💎</span>
+        <span id="walletBalance">1,000</span>
+        <span style="font-size: 10px; color: var(--text-dim);">CR</span>
+        <button class="wallet-btn-add" id="btnAddCoins" title="Пополнить +500 монет">+</button>
+      </div>
+
+      <button class="btn btn-defense" id="btnOpenDefense">
+        <span>🎓</span>
+        <span>Для защиты</span>
+      </button>
+
+      <button class="snd-btn" id="sndToggle" aria-label="Переключить звук">🔊</button>
+      <a href="index.html" class="btn">← В портал</a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="app-container">
+
+    <!-- Hero Strip with Live Commentary -->
+    <div class="hero-banner">
+      <div class="hero-text">
+        <h1>
+          <span>🏇 Тотализатор алгоритмов</span>
+          <span style="font-size: 13px; color: var(--pink); font-family: 'JetBrains Mono'; font-weight: 600;">[SECTOR: BIOMES]</span>
+        </h1>
+        <p>Делай ставки: кто придёт быстрее к финишу и кто найдёт самый дешёвый путь по энергии на взвешенной карте!</p>
+      </div>
+
+      <div class="live-caster">
+        <div class="caster-badge">
+          <span class="caster-pulse"></span>
+          <span>LIVE CASTER:</span>
+        </div>
+        <div class="caster-msg" id="casterMessage">Гонщики на стартовой решётке. Сделайте ставки в тотализаторе!</div>
+      </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="main-grid">
+
+      <!-- Left Column: Arena and Controls -->
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+
+        <!-- Generator Controls -->
+        <div class="controls-strip">
+          <div class="strip-group">
+            <span class="group-label">Карта:</span>
+            <button class="select-btn active" data-preset="bfs_trap" title="Прямой путь через болото vs обход по льду">🎯 Ловушка для BFS</button>
+            <button class="select-btn" data-preset="dfs_maze" title="Сгенерировать лабиринт через алгоритм Randomized DFS!">⚡ Лабиринт DFS</button>
+            <button class="select-btn" data-preset="biome_islands" title="Большие озера льда, грязи и равнины">🗺️ Биомы</button>
+            <button class="select-btn" data-preset="random_noise" title="Случайное распределение биомов">🎲 Рандом</button>
+          </div>
+
+          <div class="strip-group">
+            <span class="group-label">Сетка:</span>
+            <button class="select-btn" data-size="17">17×17</button>
+            <button class="select-btn active" data-size="23">23×23</button>
+            <button class="select-btn" data-size="29">29×29</button>
+            <button class="btn btn-sm" id="btnRegenerateMap">↺ Перегенерировать</button>
+          </div>
+        </div>
+
+        <!-- Biome Brush Selector -->
+        <div class="controls-strip" style="background: rgba(13, 23, 51, 0.6);">
+          <div class="strip-group">
+            <span class="group-label">Кисть:</span>
+            <div class="biome-palette">
+              <button class="biome-brush active" data-biome="swamp" title="Болото: Стоимость 5 (Вязкая трясина)">🌾 Болото (5)</button>
+              <button class="biome-brush" data-biome="grass" title="Трава: Стоимость 2 (Обычная равнина)">🌿 Трава (2)</button>
+              <button class="biome-brush" data-biome="ice" title="Лёд: Стоимость 1 (Быстрое скольжение)">❄️ Лёд (1)</button>
+              <button class="biome-brush" data-biome="wall" title="Стена: Стоимость ∞ (Непроходимо)">🧱 Стена (∞)</button>
+              <button class="biome-brush" data-biome="start" title="Установить точку СТАРТА">🟢 Старт (S)</button>
+              <button class="biome-brush" data-biome="finish" title="Установить точку ФИНИША">🚩 Финиш (F)</button>
+            </div>
+          </div>
+          <div class="strip-group">
+            <span style="font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono';">Кликай и води мышью по арене для рисования</span>
+          </div>
+        </div>
+
+        <!-- Arena Display -->
+        <div class="arena-card">
+          <div class="arena-header">
+            <div class="view-switch">
+              <button class="view-tab active" data-view="combined">🏟️ Общая Арена</button>
+              <button class="view-tab" data-view="split">🔲 Сплит-Скрин (4 камеры)</button>
+            </div>
+
+            <div class="legend-bar">
+              <div class="legend-item"><span class="legend-swatch" style="background: var(--ice-color);"></span> <span>Лёд (1)</span></div>
+              <div class="legend-item"><span class="legend-swatch" style="background: var(--grass-color);"></span> <span>Трава (2)</span></div>
+              <div class="legend-item"><span class="legend-swatch" style="background: var(--swamp-color);"></span> <span>Болото (5)</span></div>
+              <div class="legend-item"><span class="legend-swatch" style="background: var(--wall-color);"></span> <span>Стена (∞)</span></div>
+            </div>
+          </div>
+
+          <!-- Combined Canvas View -->
+          <div class="canvas-wrap" id="combinedWrap">
+            <canvas id="arenaCanvas" width="600" height="600"></canvas>
+          </div>
+
+          <!-- Split Screens View (Hidden by default) -->
+          <div class="split-grid" id="splitWrap" style="display: none;">
+            <div class="split-cell">
+              <div class="split-title" style="color: var(--color-bfs)">
+                <span>🔵 BFS (В ширину)</span>
+                <span id="splitBfsStatus">Очередь: 0</span>
+              </div>
+              <canvas class="split-canvas" id="canvasBfs" width="280" height="280"></canvas>
+            </div>
+
+            <div class="split-cell">
+              <div class="split-title" style="color: var(--color-dfs)">
+                <span>🟠 DFS (В глубину)</span>
+                <span id="splitDfsStatus">Стек: 0</span>
+              </div>
+              <canvas class="split-canvas" id="canvasDfs" width="280" height="280"></canvas>
+            </div>
+
+            <div class="split-cell">
+              <div class="split-title" style="color: var(--color-dijkstra)">
+                <span>🟢 Дейкстра (UCS)</span>
+                <span id="splitDijkstraStatus">Min-Heap g(n): 0</span>
+              </div>
+              <canvas class="split-canvas" id="canvasDijkstra" width="280" height="280"></canvas>
+            </div>
+
+            <div class="split-cell">
+              <div class="split-title" style="color: var(--color-astar)">
+                <span>🟡 A* (Эвристика)</span>
+                <span id="splitAstarStatus">Min-Heap f(n): 0</span>
+              </div>
+              <canvas class="split-canvas" id="canvasAstar" width="280" height="280"></canvas>
+            </div>
+          </div>
+
+          <!-- Live Runners Progress HUD -->
+          <div class="runners-hud" id="runnersHud">
+            <!-- Filled dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Betting Station & Controls -->
+      <div class="betting-station">
+
+        <!-- Race Launch Card -->
+        <div class="card race-action-box" style="background: linear-gradient(180deg, var(--bg-panel), var(--bg-card));">
+          <div class="card-title">
+            <span>🏁 Управление гонкой</span>
+            <span id="raceStateBadge" class="badge-win" style="background: rgba(76, 201, 240, 0.15); color: var(--cyan);">ГОТОВНОСТЬ</span>
+          </div>
+
+          <div class="speed-controls">
+            <span class="group-label">Скорость:</span>
+            <div class="strip-group">
+              <button class="select-btn" data-speed="slow">0.5×</button>
+              <button class="select-btn active" data-speed="normal">1×</button>
+              <button class="select-btn" data-speed="fast">3×</button>
+              <button class="select-btn" data-speed="instant">⚡ Мгновенно</button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" id="btnStartRace" style="font-size: 15px; padding: 14px;">
+            <span style="font-size: 18px;">🚀</span>
+            <span>НАЧАТЬ ЗАБЕГ!</span>
+          </button>
+
+          <button class="btn" id="btnResetRace" style="display: none;">
+            <span>↺</span>
+            <span>Сбросить результаты</span>
+          </button>
+        </div>
+
+        <!-- Betting Ticket Card -->
+        <div class="card" id="bettingTicketCard">
+          <div class="card-title">
+            <span>🎰 Букмекерская Линия</span>
+            <span style="font-size: 11px; color: var(--yellow); font-family: 'JetBrains Mono';">Сделай прогноз</span>
+          </div>
+
+          <!-- Bet 1: Speed (First to reach goal) -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div class="bet-category-title">
+              <span>⚡ Номинация 1: Быстрейший спринтер</span>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted);">Кто первым коснётся клетки финиша (наименьшее время/узлы)?</p>
+            <div class="bet-cards-grid" id="betGridSpeed">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Bet 2: Lowest Energy Cost -->
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+            <div class="bet-category-title" style="color: var(--yellow);">
+              <span>🔋 Номинация 2: Энерго-Гроссмейстер</span>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted);">Кто построит путь с наименьшей стоимостью энергии (лёд=1, трава=2, болото=5)?</p>
+            <div class="bet-cards-grid" id="betGridEnergy">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Bet Amount Selector -->
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+            <span class="group-label">Сумма ставки на каждую номинацию:</span>
+            <div class="chip-selector">
+              <button class="bet-chip active" data-amount="50">50</button>
+              <button class="bet-chip" data-amount="100">100</button>
+              <button class="bet-chip" data-amount="250">250</button>
+              <button class="bet-chip" data-amount="500">500</button>
+              <button class="bet-chip" data-amount="all">ALL IN 🔥</button>
+            </div>
+          </div>
+
+          <!-- Ticket Summary -->
+          <div class="bet-summary">
+            <div class="summary-row">
+              <span>Ставка на скорость:</span>
+              <b id="summarySpeedAlgo">Не выбрано</b>
+            </div>
+            <div class="summary-row">
+              <span>Ставка на энергию:</span>
+              <b id="summaryEnergyAlgo">Не выбрано</b>
+            </div>
+            <div class="summary-row">
+              <span>Всего к списанию:</span>
+              <b id="summaryTotalBet" style="color: var(--yellow);">0 CR</b>
+            </div>
+            <div class="summary-row" style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 4px;">
+              <span>Потенциальный выигрыш:</span>
+              <b id="summaryPotentialWin" style="color: var(--green);">до 0 CR</b>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Modal: Race Results & Analytics -->
+  <div class="modal-overlay" id="resultsModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🏆 Итоги Гран-При: Статистика Забега</span>
+        </div>
+        <button class="modal-close" id="btnCloseResults">✕</button>
+      </div>
+
+      <!-- Podium of Winners -->
+      <div class="podium-grid" id="resultsPodium">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Detailed Metrics Table (As required by prompt) -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <h4 style="font-family: 'Unbounded'; font-size: 14px;">📊 Сводная таблица параметров поиска</h4>
+        <div class="stats-table-wrap">
+          <table class="stats-table">
+            <thead>
+              <tr>
+                <th>Алгоритм</th>
+                <th>Статус</th>
+                <th>Посещено узлов 🔍</th>
+                <th>Длина пути 📏</th>
+                <th>Стоимость энергии ⚡</th>
+                <th>Время (мс) ⏱️</th>
+                <th>Пик памяти 🧠</th>
+                <th>Итог ставки</th>
+              </tr>
+            </thead>
+            <tbody id="statsTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Visual Comparison Bar Charts -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px;">
+        <div class="chart-box">
+          <div class="chart-title">⚡ Сравнение стоимости пути по энергии (Меньше = Лучше)</div>
+          <div id="chartCostBars"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">🔍 Сравнение исследованных клеток (Меньше = Эффективнее)</div>
+          <div id="chartNodesBars"></div>
+        </div>
+      </div>
+
+      <!-- Route overlay controls -->
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; background: var(--bg-panel); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border);">
+        <div style="font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 700;">
+          <span>Подсветка маршрутов на карте:</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px;" id="routeCheckboxes">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+        <button class="btn btn-primary" id="btnModalPlayAgain">Новый раунд 🎲</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Academic Defense Guide (Для защиты проекта) -->
+  <div class="modal-overlay" id="defenseModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🎓 Шпаргалка для защиты: Вопросы и Ответы комиссии</span>
+        </div>
+        <button class="modal-close" id="btnCloseDefense">✕</button>
+      </div>
+
+      <div class="defense-section">
+
+        <div class="defense-card">
+          <div class="defense-q">
+            <span>❓ Почему обычный BFS и DFS скучны на пустой сетке?</span>
+          </div>
+          <div class="defense-a">
+            На не взвешенном графе без препятствий все рёбра эквивалентны ($w(e) = 1$). BFS гарантированно находит путь с минимальным числом шагов, а DFS просто хаотично блуждает. Во взвешенном пространстве (лёд=1, трава=2, болото=5) задача принципиально меняется: кратчайший по <b>количеству шагов</b> путь перестаёт быть <b>наиболее выгодным по ресурсам (энергии)</b>.
+          </div>
+        </div>
+
+        <div class="defense-card">
+          <div class="defense-q">
+            <span>❓ Почему BFS проигрывает Дейкстре и A* по энергии на взвешенной сетке?</span>
+          </div>
+          <div class="defense-a">
+            <b>BFS (Поиск в ширину)</b> оптимизирует метрику реберного расстояния $d(u, v)$ через очередь FIFO. Он не знает о весах: для него шаг по болоту (стоимость 5) и шаг по льду (стоимость 1) абсолютно равны. Поэтому в пресете «Ловушка для BFS» алгоритм смело шагает через болото из 5 клеток (тратя $5 \times 5 = 25$ энергии), в то время как <b>Дейкстра</b> и <b>A*</b> находят обходной путь по льду из 10 клеток (тратя $10 \times 1 = 10$ энергии!).
+          </div>
+          <div class="defense-formula">
+            BFS минимизирует: length(P) = |E|.<br>
+            Дейкстра и A* минимизируют: cost(P) = &sum; w(e).
+          </div>
+        </div>
+
+        <div class="defense-card">
+          <div class="defense-q">
+            <span>❓ Как работает процедурная генерация лабиринта через Randomized DFS?</span>
+          </div>
+          <div class="defense-a">
+            <b>Randomized DFS (Рекурсивный бэктрекинг / стек):</b>
+            <ol style="margin-left: 20px; margin-top: 6px;">
+              <li>Все клетки сетки изначально инициализируются стенами.</li>
+              <li>Случайная стартовая клетка добавляется в стек и помечается как проход.</li>
+              <li>Пока стек не пуст: смотрим текущую клетку. Ищем непосещенных соседей через 2 клетки (вверх, вниз, влево, вправо).</li>
+              <li>Если соседи есть: случайно выбираем одного, сносим стену между ними (делаем проходом) и пушим соседа в стек.</li>
+              <li>Если соседей нет: извлекаем клетку из стека (бэктрекинг).</li>
+              <li><b>Важная фишка (Braid Maze):</b> чистый DFS генерирует дерево (лабиринт без циклов с 1 единственным путем). Чтобы у алгоритмов появился выбор между «дорогой по льду» и «короткой через болото», мы удаляем 20-30% тупиков, создавая развилки и циклы!</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="defense-card">
+          <div class="defense-q">
+            <span>❓ В чем ключевое отличие A* от Дейкстры?</span>
+          </div>
+          <div class="defense-a">
+            <b>Алгоритм Дейкстры (Uniform Cost Search)</b> раскрывает фронтир концентрическими кругами равной стоимости $g(n)$, исследуя всю плоскость. 
+            <b>A*</b> использует эвристическую функцию $f(n) = g(n) + h(n)$. Мы используем манхэттенское расстояние, домноженное на минимальную стоимость клетки ($\min(cost) = 1$ для льда):
+          </div>
+          <div class="defense-formula">
+            h(n) = (|x_n - x_target| + |y_n - y_target|) &times; 1 &le; h*(n) [Допустимая эвристика!]<br>
+            Благодаря этому A* сохраняет строгое математическое доказательство оптимальности, но проверяет в 2-4 раза меньше клеток, направляясь к финишу!
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       Sound Synthesis (Web Audio API - No external assets)
+       ========================================================================== */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = localStorage.getItem('qairu_race_muted') === '1';
+        this.updateBtn();
+      }
+
+      init() {
+        if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      toggle() {
+        this.init();
+        this.muted = !this.muted;
+        localStorage.setItem('qairu_race_muted', this.muted ? '1' : '0');
+        this.updateBtn();
+        if (!this.muted) this.playTone(520, 'sine', 0.08, 0.08);
+      }
+
+      updateBtn() {
+        const btn = document.getElementById('sndToggle');
+        if (!btn || !btn.classList) return;
+        if (this.muted) {
+          btn.classList.add('muted');
+          btn.textContent = '🔇';
+        } else {
+          btn.classList.remove('muted');
+          btn.textContent = '🔊';
+        }
+      }
+
+      playTone(freq, type = 'sine', duration = 0.1, gainVal = 0.06) {
+        if (this.muted) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (_) {}
+      }
+
+      playCoin() {
+        if (this.muted) return;
+        this.playTone(987.77, 'sine', 0.08, 0.08);
+        setTimeout(() => this.playTone(1318.51, 'sine', 0.15, 0.1), 70);
+      }
+
+      playCountdown(isGo = false) {
+        if (this.muted) return;
+        if (isGo) {
+          this.playTone(880, 'triangle', 0.25, 0.12);
+          setTimeout(() => this.playTone(1174.66, 'sine', 0.35, 0.12), 80);
+        } else {
+          this.playTone(440, 'triangle', 0.12, 0.08);
+        }
+      }
+
+      playStep(biomeType) {
+        if (this.muted) return;
+        if (biomeType === 'ice') {
+          this.playTone(1200 + Math.random() * 400, 'sine', 0.04, 0.03);
+        } else if (biomeType === 'swamp') {
+          this.playTone(120 + Math.random() * 40, 'sawtooth', 0.08, 0.04);
+        } else {
+          this.playTone(400 + Math.random() * 100, 'triangle', 0.04, 0.03);
+        }
+      }
+
+      playFanfare() {
+        if (this.muted) return;
+        const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+        notes.forEach((f, i) => {
+          setTimeout(() => this.playTone(f, 'triangle', 0.22, 0.1), i * 90);
+        });
+      }
+
+      playBuzzer() {
+        if (this.muted) return;
+        this.playTone(180, 'sawtooth', 0.3, 0.08);
+      }
+    }
+    const sound = new SoundEngine();
+    document.getElementById('sndToggle').onclick = () => sound.toggle();
+
+    /* ==========================================================================
+       Priority Queue (Min Binary Heap) for Dijkstra & A*
+       ========================================================================== */
+    class PriorityQueue {
+      constructor(compareFn = (a, b) => a.priority - b.priority) {
+        this.data = [];
+        this.compare = compareFn;
+      }
+      push(item) {
+        this.data.push(item);
+        this._bubbleUp(this.data.length - 1);
+      }
+      pop() {
+        if (!this.data.length) return null;
+        const top = this.data[0];
+        const bottom = this.data.pop();
+        if (this.data.length > 0) {
+          this.data[0] = bottom;
+          this._bubbleDown(0);
+        }
+        return top;
+      }
+      size() {
+        return this.data.length;
+      }
+      isEmpty() {
+        return this.data.length === 0;
+      }
+      _bubbleUp(idx) {
+        while (idx > 0) {
+          const parent = (idx - 1) >> 1;
+          if (this.compare(this.data[idx], this.data[parent]) < 0) {
+            [this.data[idx], this.data[parent]] = [this.data[parent], this.data[idx]];
+            idx = parent;
+          } else break;
+        }
+      }
+      _bubbleDown(idx) {
+        const len = this.data.length;
+        while (true) {
+          let smallest = idx;
+          const left = (idx << 1) + 1;
+          const right = left + 1;
+          if (left < len && this.compare(this.data[left], this.data[smallest]) < 0) smallest = left;
+          if (right < len && this.compare(this.data[right], this.data[smallest]) < 0) smallest = right;
+          if (smallest !== idx) {
+            [this.data[idx], this.data[smallest]] = [this.data[smallest], this.data[idx]];
+            idx = smallest;
+          } else break;
+        }
+      }
+    }
+
+    /* ==========================================================================
+       Biomes Definition (Prompt specs: ice=1, grass=2, swamp=5, wall=Infinity)
+       ========================================================================== */
+    const BIOMES = {
+      ice: { id: 'ice', name: 'Лёд', cost: 1, color: '#67e8f9', bg: '#083344', icon: '❄️' },
+      grass: { id: 'grass', name: 'Трава', cost: 2, color: '#4ade80', bg: '#064e3b', icon: '🌿' },
+      swamp: { id: 'swamp', name: 'Болото', cost: 5, color: '#facc15', bg: '#422006', icon: '🌾' },
+      wall: { id: 'wall', name: 'Стена', cost: Infinity, color: '#64748b', bg: '#1e293b', icon: '🧱' }
+    };
+
+    /* ==========================================================================
+       Algorithms Roster
+       ========================================================================== */
+    const ALGORITHMS = [
+      {
+        id: 'bfs',
+        name: 'BFS',
+        fullName: 'BFS (В ширину)',
+        color: '#38bdf8',
+        tag: 'Очередь FIFO',
+        motto: 'Меньше шагов (слеп к весам)',
+        speedOdds: 2.2,
+        energyOdds: 4.5,
+        createState: (grid, start, finish) => new BfsRunner(grid, start, finish)
+      },
+      {
+        id: 'dfs',
+        name: 'DFS',
+        fullName: 'DFS (В глубину)',
+        color: '#fb923c',
+        tag: 'Стек LIFO',
+        motto: 'Бежит наугад вглубь',
+        speedOdds: 6.5,
+        energyOdds: 8.5,
+        createState: (grid, start, finish) => new DfsRunner(grid, start, finish)
+      },
+      {
+        id: 'dijkstra',
+        name: 'Дейкстра',
+        fullName: 'Дейкстра (UCS)',
+        color: '#4ade80',
+        tag: 'Min-Heap g(n)',
+        motto: 'Гарантия мин. энергии',
+        speedOdds: 3.8,
+        energyOdds: 1.5,
+        createState: (grid, start, finish) => new DijkstraRunner(grid, start, finish)
+      },
+      {
+        id: 'astar',
+        name: 'A*',
+        fullName: 'A* (Эвристика)',
+        color: '#ff2e93',
+        tag: 'Min-Heap f(n)',
+        motto: 'Мин. энергия + направленность',
+        speedOdds: 2.4,
+        energyOdds: 1.5,
+        createState: (grid, start, finish) => new AStarRunner(grid, start, finish)
+      },
+      {
+        id: 'greedy',
+        name: 'Жадный',
+        fullName: 'Жадный (Best-First)',
+        color: '#c084fc',
+        tag: 'Min-Heap h(n)',
+        motto: 'Спринт к финишу напролом',
+        speedOdds: 1.9,
+        energyOdds: 5.5,
+        createState: (grid, start, finish) => new GreedyRunner(grid, start, finish)
+      }
+    ];
+
+    /* ==========================================================================
+       Runner Implementations (Step-by-Step for Simultaneous Race Simulation)
+       ========================================================================== */
+    class BaseRunner {
+      constructor(grid, start, finish, id, name, color) {
+        this.grid = grid;
+        this.rows = grid.length;
+        this.cols = grid[0].length;
+        this.start = start;
+        this.finish = finish;
+        this.id = id;
+        this.name = name;
+        this.color = color;
+
+        this.visited = new Set();
+        this.parent = new Map();
+        this.current = null;
+        this.path = null;
+        this.finished = false;
+        this.failed = false;
+        this.exploredCount = 0;
+        this.peakMemory = 0;
+        this.pathLength = 0;
+        this.pathCost = 0;
+        this.finishRank = 0;
+        this.timeMs = 0;
+        this.startTime = performance.now();
+      }
+
+      key(r, c) { return `${r},${c}`; }
+
+      getNeighbors(r, c) {
+        const dirs = [
+          { r: r - 1, c: c }, // Up
+          { r: r + 1, c: c }, // Down
+          { r: r, c: c - 1 }, // Left
+          { r: r, c: c + 1 }  // Right
+        ];
+        const res = [];
+        for (const d of dirs) {
+          if (d.r >= 0 && d.r < this.rows && d.c >= 0 && d.c < this.cols) {
+            if (this.grid[d.r][d.c].biome !== 'wall') {
+              res.push(d);
+            }
+          }
+        }
+        return res;
+      }
+
+      reconstructPath() {
+        const p = [];
+        let curr = this.key(this.finish.r, this.finish.c);
+        let totalCost = 0;
+        while (curr) {
+          const [r, c] = curr.split(',').map(Number);
+          p.unshift({ r, c });
+          if (!(r === this.start.r && c === this.start.c)) {
+            totalCost += BIOMES[this.grid[r][c].biome].cost;
+          }
+          curr = this.parent.get(curr);
+        }
+        this.path = p;
+        this.pathLength = p.length;
+        this.pathCost = totalCost;
+      }
+    }
+
+    class BfsRunner extends BaseRunner {
+      constructor(grid, start, finish) {
+        super(grid, start, finish, 'bfs', 'BFS', '#38bdf8');
+        this.queue = [{ r: start.r, c: start.c }];
+        this.head = 0;
+        this.visited.add(this.key(start.r, start.c));
+      }
+
+      step() {
+        if (this.finished || this.failed) return;
+        if (this.head >= this.queue.length) {
+          this.failed = true;
+          this.timeMs = performance.now() - this.startTime;
+          return;
+        }
+
+        const curr = this.queue[this.head++];
+        this.current = curr;
+        this.exploredCount++;
+
+        const currentMem = this.queue.length - this.head;
+        if (currentMem > this.peakMemory) this.peakMemory = currentMem;
+
+        if (curr.r === this.finish.r && curr.c === this.finish.c) {
+          this.finished = true;
+          this.timeMs = performance.now() - this.startTime;
+          this.reconstructPath();
+          return;
+        }
+
+        for (const n of this.getNeighbors(curr.r, curr.c)) {
+          const k = this.key(n.r, n.c);
+          if (!this.visited.has(k)) {
+            this.visited.add(k);
+            this.parent.set(k, this.key(curr.r, curr.c));
+            this.queue.push(n);
+          }
+        }
+      }
+    }
+
+    class DfsRunner extends BaseRunner {
+      constructor(grid, start, finish) {
+        super(grid, start, finish, 'dfs', 'DFS', '#fb923c');
+        this.stack = [{ r: start.r, c: start.c }];
+        this.visited.add(this.key(start.r, start.c));
+      }
+
+      step() {
+        if (this.finished || this.failed) return;
+        if (!this.stack.length) {
+          this.failed = true;
+          this.timeMs = performance.now() - this.startTime;
+          return;
+        }
+
+        const curr = this.stack.pop();
+        this.current = curr;
+        this.exploredCount++;
+
+        if (this.stack.length > this.peakMemory) this.peakMemory = this.stack.length;
+
+        if (curr.r === this.finish.r && curr.c === this.finish.c) {
+          this.finished = true;
+          this.timeMs = performance.now() - this.startTime;
+          this.reconstructPath();
+          return;
+        }
+
+        const neighbors = this.getNeighbors(curr.r, curr.c);
+        // Randomize direction priority for authentic exploratory feel of DFS
+        for (let i = neighbors.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [neighbors[i], neighbors[j]] = [neighbors[j], neighbors[i]];
+        }
+
+        for (const n of neighbors) {
+          const k = this.key(n.r, n.c);
+          if (!this.visited.has(k)) {
+            this.visited.add(k);
+            this.parent.set(k, this.key(curr.r, curr.c));
+            this.stack.push(n);
+          }
+        }
+      }
+    }
+
+    class DijkstraRunner extends BaseRunner {
+      constructor(grid, start, finish) {
+        super(grid, start, finish, 'dijkstra', 'Дейкстра', '#4ade80');
+        this.pq = new PriorityQueue((a, b) => a.cost - b.cost);
+        this.dist = new Map();
+        const startKey = this.key(start.r, start.c);
+        this.dist.set(startKey, 0);
+        this.pq.push({ r: start.r, c: start.c, cost: 0 });
+      }
+
+      step() {
+        if (this.finished || this.failed) return;
+        if (this.pq.isEmpty()) {
+          this.failed = true;
+          this.timeMs = performance.now() - this.startTime;
+          return;
+        }
+
+        if (this.pq.size() > this.peakMemory) this.peakMemory = this.pq.size();
+
+        const top = this.pq.pop();
+        const currKey = this.key(top.r, top.c);
+
+        if (this.visited.has(currKey)) return; // Already expanded with smaller cost
+        this.visited.add(currKey);
+        this.current = { r: top.r, c: top.c };
+        this.exploredCount++;
+
+        if (top.r === this.finish.r && top.c === this.finish.c) {
+          this.finished = true;
+          this.timeMs = performance.now() - this.startTime;
+          this.reconstructPath();
+          return;
+        }
+
+        for (const n of this.getNeighbors(top.r, top.c)) {
+          const nKey = this.key(n.r, n.c);
+          const edgeCost = BIOMES[this.grid[n.r][n.c].biome].cost;
+          const newCost = top.cost + edgeCost;
+          const oldCost = this.dist.has(nKey) ? this.dist.get(nKey) : Infinity;
+
+          if (newCost < oldCost) {
+            this.dist.set(nKey, newCost);
+            this.parent.set(nKey, currKey);
+            this.pq.push({ r: n.r, c: n.c, cost: newCost });
+          }
+        }
+      }
+    }
+
+    class AStarRunner extends BaseRunner {
+      constructor(grid, start, finish) {
+        super(grid, start, finish, 'astar', 'A*', '#ff2e93');
+        this.pq = new PriorityQueue((a, b) => a.f - b.f);
+        this.gScore = new Map();
+        const startKey = this.key(start.r, start.c);
+        this.gScore.set(startKey, 0);
+        const h = this.heuristic(start.r, start.c);
+        this.pq.push({ r: start.r, c: start.c, g: 0, f: h });
+      }
+
+      heuristic(r, c) {
+        // Manhattan distance * 1 (minimum step cost is Ice = 1, ensuring strictly admissible & consistent heuristic)
+        return (Math.abs(r - this.finish.r) + Math.abs(c - this.finish.c)) * 1;
+      }
+
+      step() {
+        if (this.finished || this.failed) return;
+        if (this.pq.isEmpty()) {
+          this.failed = true;
+          this.timeMs = performance.now() - this.startTime;
+          return;
+        }
+
+        if (this.pq.size() > this.peakMemory) this.peakMemory = this.pq.size();
+
+        const top = this.pq.pop();
+        const currKey = this.key(top.r, top.c);
+
+        if (this.visited.has(currKey)) return;
+        this.visited.add(currKey);
+        this.current = { r: top.r, c: top.c };
+        this.exploredCount++;
+
+        if (top.r === this.finish.r && top.c === this.finish.c) {
+          this.finished = true;
+          this.timeMs = performance.now() - this.startTime;
+          this.reconstructPath();
+          return;
+        }
+
+        for (const n of this.getNeighbors(top.r, top.c)) {
+          const nKey = this.key(n.r, n.c);
+          const edgeCost = BIOMES[this.grid[n.r][n.c].biome].cost;
+          const tentativeG = top.g + edgeCost;
+          const oldG = this.gScore.has(nKey) ? this.gScore.get(nKey) : Infinity;
+
+          if (tentativeG < oldG) {
+            this.gScore.set(nKey, tentativeG);
+            this.parent.set(nKey, currKey);
+            const f = tentativeG + this.heuristic(n.r, n.c);
+            this.pq.push({ r: n.r, c: n.c, g: tentativeG, f: f });
+          }
+        }
+      }
+    }
+
+    class GreedyRunner extends BaseRunner {
+      constructor(grid, start, finish) {
+        super(grid, start, finish, 'greedy', 'Жадный', '#c084fc');
+        this.pq = new PriorityQueue((a, b) => a.h - b.h);
+        this.visited.add(this.key(start.r, start.c));
+        this.pq.push({ r: start.r, c: start.c, h: this.heuristic(start.r, start.c) });
+      }
+
+      heuristic(r, c) {
+        return Math.abs(r - this.finish.r) + Math.abs(c - this.finish.c);
+      }
+
+      step() {
+        if (this.finished || this.failed) return;
+        if (this.pq.isEmpty()) {
+          this.failed = true;
+          this.timeMs = performance.now() - this.startTime;
+          return;
+        }
+
+        if (this.pq.size() > this.peakMemory) this.peakMemory = this.pq.size();
+
+        const top = this.pq.pop();
+        this.current = { r: top.r, c: top.c };
+        this.exploredCount++;
+
+        if (top.r === this.finish.r && top.c === this.finish.c) {
+          this.finished = true;
+          this.timeMs = performance.now() - this.startTime;
+          this.reconstructPath();
+          return;
+        }
+
+        for (const n of this.getNeighbors(top.r, top.c)) {
+          const nKey = this.key(n.r, n.c);
+          if (!this.visited.has(nKey)) {
+            this.visited.add(nKey);
+            this.parent.set(nKey, this.key(top.r, top.c));
+            this.pq.push({ r: n.r, c: n.c, h: this.heuristic(n.r, n.c) });
+          }
+        }
+      }
+    }
+
+    /* ==========================================================================
+       Map Generator: Randomized DFS, Biomes & The BFS Trap
+       ========================================================================== */
+    class MapGenerator {
+      static createEmpty(rows, cols, defaultBiome = 'grass') {
+        const grid = [];
+        for (let r = 0; r < rows; r++) {
+          const row = [];
+          for (let c = 0; c < cols; c++) {
+            row.push({ biome: defaultBiome });
+          }
+          grid.push(row);
+        }
+        return grid;
+      }
+
+      /* 1. Procedural Maze Generation via Randomized DFS with Stack */
+      static generateRandomizedDfsMaze(rows, cols, braidRatio = 0.25) {
+        // Ensure odd dimensions for proper wall/path alternation
+        if (rows % 2 === 0) rows++;
+        if (cols % 2 === 0) cols++;
+
+        // Initialize grid full of walls
+        const grid = this.createEmpty(rows, cols, 'wall');
+
+        const stack = [{ r: 1, c: 1 }];
+        grid[1][1].biome = 'grass';
+
+        while (stack.length > 0) {
+          const curr = stack[stack.length - 1];
+          const unvisitedNeighbors = [];
+          const dirs = [
+            { dr: -2, dc: 0, wr: -1, wc: 0 }, // Up
+            { dr: 2, dc: 0, wr: 1, wc: 0 },  // Down
+            { dr: 0, dc: -2, wr: 0, wc: -1 }, // Left
+            { dr: 0, dc: 2, wr: 0, wc: 1 }   // Right
+          ];
+
+          for (const d of dirs) {
+            const nr = curr.r + d.dr;
+            const nc = curr.c + d.dc;
+            if (nr > 0 && nr < rows - 1 && nc > 0 && nc < cols - 1) {
+              if (grid[nr][nc].biome === 'wall') {
+                unvisitedNeighbors.push({ nr, nc, wr: curr.r + d.wr, wc: curr.c + d.wc });
+              }
+            }
+          }
+
+          if (unvisitedNeighbors.length > 0) {
+            const chosen = unvisitedNeighbors[Math.floor(Math.random() * unvisitedNeighbors.length)];
+            // Knock down wall between
+            grid[chosen.wr][chosen.wc].biome = 'grass';
+            grid[chosen.nr][chosen.nc].biome = 'grass';
+            stack.push({ r: chosen.nr, c: chosen.nc });
+          } else {
+            stack.pop();
+          }
+        }
+
+        // Braid maze: punch loops so there are alternate pathways
+        for (let r = 2; r < rows - 2; r++) {
+          for (let c = 2; c < cols - 2; c++) {
+            if (grid[r][c].biome === 'wall' && Math.random() < braidRatio) {
+              const horiz = grid[r][c - 1].biome !== 'wall' && grid[r][c + 1].biome !== 'wall';
+              const vert = grid[r - 1][c].biome !== 'wall' && grid[r + 1][c].biome !== 'wall';
+              if (horiz || vert) {
+                grid[r][c].biome = 'grass';
+              }
+            }
+          }
+        }
+
+        // Distribute biomes along the carved corridors
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (grid[r][c].biome !== 'wall') {
+              const rand = Math.random();
+              if (rand < 0.28) {
+                grid[r][c].biome = 'ice';
+              } else if (rand < 0.58) {
+                grid[r][c].biome = 'swamp';
+              } else {
+                grid[r][c].biome = 'grass';
+              }
+            }
+          }
+        }
+
+        // Free start and finish
+        const start = { r: 1, c: 1 };
+        const finish = { r: rows - 2, c: cols - 2 };
+        grid[start.r][start.c].biome = 'ice';
+        grid[finish.r][finish.c].biome = 'ice';
+
+        return { grid, start, finish };
+      }
+
+      /* 2. The Classic "BFS Trap" Showcase */
+      static generateBfsTrap(rows, cols) {
+        const grid = this.createEmpty(rows, cols, 'grass');
+        const start = { r: Math.floor(rows / 2), c: 2 };
+        const finish = { r: Math.floor(rows / 2), c: cols - 3 };
+
+        // Construct middle barrier
+        const midR = Math.floor(rows / 2);
+
+        // Put walls around the middle lane to force the two options
+        for (let c = 3; c < cols - 3; c++) {
+          grid[midR - 1][c].biome = 'wall';
+          grid[midR + 1][c].biome = 'wall';
+        }
+
+        // Option A: Direct Short Path right through deep thick Swamp!
+        // 5 swamp cells = 5 * 5 = 25 energy. Steps = 7.
+        for (let c = 3; c < cols - 3; c++) {
+          grid[midR][c].biome = 'swamp';
+        }
+
+        // Option B: Longer scenic detour along pristine Ice!
+        // 16 ice cells = 16 * 1 = 16 energy. Steps = 16.
+        // Carve top ice corridor
+        const topR = Math.max(1, midR - 4);
+        for (let r = topR; r <= midR; r++) {
+          grid[r][2].biome = 'ice';
+          grid[r][cols - 3].biome = 'ice';
+        }
+        for (let c = 2; c <= cols - 3; c++) {
+          grid[topR][c].biome = 'ice';
+        }
+
+        // Scatter some terrain elsewhere for atmosphere
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (r === 0 || r === rows - 1 || c === 0 || c === cols - 1) {
+              grid[r][c].biome = 'wall';
+            }
+          }
+        }
+
+        grid[start.r][start.c].biome = 'ice';
+        grid[finish.r][finish.c].biome = 'ice';
+
+        return { grid, start, finish };
+      }
+
+      /* 3. Biome Continents / Islands */
+      static generateBiomeIslands(rows, cols) {
+        const grid = this.createEmpty(rows, cols, 'grass');
+
+        // Generate clusters via distance seeds
+        const numSeeds = 12;
+        const seeds = [];
+        const types = ['ice', 'swamp', 'wall', 'grass'];
+        for (let i = 0; i < numSeeds; i++) {
+          seeds.push({
+            r: Math.floor(Math.random() * rows),
+            c: Math.floor(Math.random() * cols),
+            biome: types[Math.floor(Math.random() * types.length)]
+          });
+        }
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            // Find closest seed with noise
+            let bestDist = Infinity;
+            let bestBiome = 'grass';
+            for (const s of seeds) {
+              const d = Math.hypot(r - s.r, c - s.c) + (Math.random() * 2 - 1);
+              if (d < bestDist) {
+                bestDist = d;
+                bestBiome = s.biome;
+              }
+            }
+            grid[r][c].biome = bestBiome;
+          }
+        }
+
+        // Borders
+        for (let r = 0; r < rows; r++) {
+          grid[r][0].biome = 'wall';
+          grid[r][cols - 1].biome = 'wall';
+        }
+        for (let c = 0; c < cols; c++) {
+          grid[0][c].biome = 'wall';
+          grid[rows - 1][c].biome = 'wall';
+        }
+
+        const start = { r: 1, c: 1 };
+        const finish = { r: rows - 2, c: cols - 2 };
+        grid[start.r][start.c].biome = 'ice';
+        grid[finish.r][finish.c].biome = 'ice';
+
+        return { grid, start, finish };
+      }
+
+      /* 4. Random Noise */
+      static generateRandomNoise(rows, cols) {
+        const grid = this.createEmpty(rows, cols, 'grass');
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (r === 0 || r === rows - 1 || c === 0 || c === cols - 1) {
+              grid[r][c].biome = 'wall';
+              continue;
+            }
+            const rnd = Math.random();
+            if (rnd < 0.22) grid[r][c].biome = 'wall';
+            else if (rnd < 0.45) grid[r][c].biome = 'ice';
+            else if (rnd < 0.70) grid[r][c].biome = 'swamp';
+            else grid[r][c].biome = 'grass';
+          }
+        }
+        const start = { r: 1, c: 1 };
+        const finish = { r: rows - 2, c: cols - 2 };
+        grid[start.r][start.c].biome = 'ice';
+        grid[finish.r][finish.c].biome = 'ice';
+        return { grid, start, finish };
+      }
+    }
+
+    /* ==========================================================================
+       Main Game State & Controller
+       ========================================================================== */
+    class AlgorithmSweepstakesApp {
+      constructor() {
+        this.rows = 23;
+        this.cols = 23;
+        this.preset = 'bfs_trap';
+        this.brush = 'swamp';
+        this.viewMode = 'combined'; // 'combined' | 'split'
+        this.speedMode = 'normal'; // 'slow' | 'normal' | 'fast' | 'instant'
+        this.isRacing = false;
+        this.raceFinished = false;
+
+        // Player Wallet
+        this.wallet = parseInt(localStorage.getItem('qairu_wallet') || '1000', 10);
+        if (isNaN(this.wallet) || this.wallet < 0) this.wallet = 1000;
+
+        // Betting Choices
+        this.selectedSpeedAlgo = 'greedy';
+        this.selectedEnergyAlgo = 'dijkstra';
+        this.betAmount = 50;
+
+        // Active Runners
+        this.runners = [];
+        this.finishOrder = [];
+        this.energyWinner = null;
+        this.animFrameId = null;
+
+        // Canvases
+        this.mainCanvas = document.getElementById('arenaCanvas');
+        this.mainCtx = this.mainCanvas.getContext('2d');
+
+        this.splitCanvases = {
+          bfs: document.getElementById('canvasBfs').getContext('2d'),
+          dfs: document.getElementById('canvasDfs').getContext('2d'),
+          dijkstra: document.getElementById('canvasDijkstra').getContext('2d'),
+          astar: document.getElementById('canvasAstar').getContext('2d')
+        };
+
+        // Confetti Canvas
+        this.confettiCanvas = document.getElementById('confettiCanvas');
+        this.confettiCtx = this.confettiCanvas.getContext('2d');
+        this.confettiParticles = [];
+
+        this.visibleRoutes = {
+          bfs: true,
+          dfs: true,
+          dijkstra: true,
+          astar: true,
+          greedy: true
+        };
+
+        this.init();
+      }
+
+      init() {
+        this.updateWalletUI();
+        this.renderBettingCards();
+        this.loadMap();
+        this.bindEvents();
+        this.bindCanvasInteraction();
+        this.updateCommentary("Лаборатория готова. Выберите карту и сформируйте ставку в тотализаторе!");
+        this.resizeConfetti();
+        window.addEventListener('resize', () => this.resizeConfetti());
+      }
+
+      updateWalletUI() {
+        document.getElementById('walletBalance').textContent = this.wallet.toLocaleString();
+        localStorage.setItem('qairu_wallet', this.wallet.toString());
+        this.updateBetSummary();
+      }
+
+      loadMap() {
+        if (this.preset === 'bfs_trap') {
+          const mapData = MapGenerator.generateBfsTrap(this.rows, this.cols);
+          this.grid = mapData.grid;
+          this.start = mapData.start;
+          this.finish = mapData.finish;
+        } else if (this.preset === 'dfs_maze') {
+          const mapData = MapGenerator.generateRandomizedDfsMaze(this.rows, this.cols, 0.25);
+          this.grid = mapData.grid;
+          this.start = mapData.start;
+          this.finish = mapData.finish;
+        } else if (this.preset === 'biome_islands') {
+          const mapData = MapGenerator.generateBiomeIslands(this.rows, this.cols);
+          this.grid = mapData.grid;
+          this.start = mapData.start;
+          this.finish = mapData.finish;
+        } else {
+          const mapData = MapGenerator.generateRandomNoise(this.rows, this.cols);
+          this.grid = mapData.grid;
+          this.start = mapData.start;
+          this.finish = mapData.finish;
+        }
+
+        this.resetRaceState();
+        this.renderArena();
+      }
+
+      resetRaceState() {
+        if (this.animFrameId) {
+          cancelAnimationFrame(this.animFrameId);
+          this.animFrameId = null;
+        }
+        this.isRacing = false;
+        this.raceFinished = false;
+        this.finishOrder = [];
+        this.runners = ALGORITHMS.map(a => a.createState(this.grid, this.start, this.finish));
+
+        document.getElementById('raceStateBadge').textContent = 'ГОТОВНОСТЬ';
+        document.getElementById('raceStateBadge').className = 'badge-win';
+        document.getElementById('raceStateBadge').style.background = 'rgba(76, 201, 240, 0.15)';
+        document.getElementById('raceStateBadge').style.color = 'var(--cyan)';
+
+        document.getElementById('btnStartRace').disabled = false;
+        document.getElementById('btnStartRace').style.display = 'inline-flex';
+        document.getElementById('btnResetRace').style.display = 'none';
+
+        this.renderRunnersHUD();
+        this.renderArena();
+      }
+
+      renderBettingCards() {
+        const gridSpeed = document.getElementById('betGridSpeed');
+        const gridEnergy = document.getElementById('betGridEnergy');
+        gridSpeed.innerHTML = '';
+        gridEnergy.innerHTML = '';
+
+        ALGORITHMS.forEach(algo => {
+          // Speed card
+          const cardS = document.createElement('div');
+          cardS.className = `bet-algo-card ${this.selectedSpeedAlgo === algo.id ? 'selected' : ''}`;
+          cardS.dataset.algo = algo.id;
+          cardS.innerHTML = `
+            <div class="bet-algo-name" style="color: ${algo.color}">
+              <span>●</span>
+              <span>${algo.name}</span>
+            </div>
+            <div class="bet-algo-desc">${algo.motto}</div>
+            <div class="bet-algo-odds">
+              <span>Коэфф:</span>
+              <span>${algo.speedOdds.toFixed(1)}×</span>
+            </div>
+          `;
+          cardS.onclick = () => {
+            sound.playTone(700, 'sine', 0.05, 0.05);
+            this.selectedSpeedAlgo = algo.id;
+            this.renderBettingCards();
+            this.updateBetSummary();
+          };
+          gridSpeed.appendChild(cardS);
+
+          // Energy card
+          const cardE = document.createElement('div');
+          cardE.className = `bet-algo-card ${this.selectedEnergyAlgo === algo.id ? 'selected-energy' : ''}`;
+          cardE.dataset.algo = algo.id;
+          cardE.innerHTML = `
+            <div class="bet-algo-name" style="color: ${algo.color}">
+              <span>●</span>
+              <span>${algo.name}</span>
+            </div>
+            <div class="bet-algo-desc">${algo.motto}</div>
+            <div class="bet-algo-odds">
+              <span>Коэфф:</span>
+              <span>${algo.energyOdds.toFixed(1)}×</span>
+            </div>
+          `;
+          cardE.onclick = () => {
+            sound.playTone(850, 'sine', 0.05, 0.05);
+            this.selectedEnergyAlgo = algo.id;
+            this.renderBettingCards();
+            this.updateBetSummary();
+          };
+          gridEnergy.appendChild(cardE);
+        });
+
+        this.updateBetSummary();
+      }
+
+      updateBetSummary() {
+        const speedAlgo = ALGORITHMS.find(a => a.id === this.selectedSpeedAlgo);
+        const energyAlgo = ALGORITHMS.find(a => a.id === this.selectedEnergyAlgo);
+
+        const sBet = this.betAmount;
+        const eBet = this.betAmount;
+        const total = sBet + eBet;
+
+        document.getElementById('summarySpeedAlgo').textContent = speedAlgo ? `${speedAlgo.name} (${speedAlgo.speedOdds}×)` : '—';
+        document.getElementById('summaryEnergyAlgo').textContent = energyAlgo ? `${energyAlgo.name} (${energyAlgo.energyOdds}×)` : '—';
+        document.getElementById('summaryTotalBet').textContent = `${total} CR`;
+
+        const maxWin = Math.round((sBet * (speedAlgo?.speedOdds || 1)) + (eBet * (energyAlgo?.energyOdds || 1)));
+        document.getElementById('summaryPotentialWin').textContent = `до ${maxWin.toLocaleString()} CR`;
+      }
+
+      renderRunnersHUD() {
+        const hud = document.getElementById('runnersHud');
+        hud.innerHTML = '';
+
+        this.runners.forEach(r => {
+          const pill = document.createElement('div');
+          pill.className = `runner-pill ${r.finished ? 'finished' : ''}`;
+          pill.id = `hud-pill-${r.id}`;
+
+          const maxPossible = this.rows * this.cols;
+          const pct = Math.min(100, Math.round((r.exploredCount / maxPossible) * 100));
+
+          pill.innerHTML = `
+            <div class="runner-top">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="runner-dot" style="background: ${r.color}"></span>
+                <span style="color: ${r.color}">${r.name}</span>
+              </div>
+              <span id="hud-status-${r.id}" style="font-size: 10px; color: ${r.finished ? 'var(--green)' : 'var(--text-dim)'}">
+                ${r.finished ? `ФИНИШ #${r.finishRank}` : (r.failed ? 'ТУПИК' : 'В пути')}
+              </span>
+            </div>
+            <div class="runner-metrics">
+              <span>Узлы: <b id="hud-nodes-${r.id}">${r.exploredCount}</b></span>
+              <span>Цена: <b id="hud-cost-${r.id}">${r.pathCost || '—'}</b></span>
+            </div>
+            <div class="runner-bar-wrap">
+              <div class="runner-bar" id="hud-bar-${r.id}" style="width: ${pct}%; background: ${r.color}"></div>
+            </div>
+          `;
+          hud.appendChild(pill);
+        });
+      }
+
+      updateCommentary(msg) {
+        const el = document.getElementById('casterMessage');
+        el.textContent = msg;
+      }
+
+      /* ==========================================================================
+         Canvas Drawing (Main Combined View & Split Screens)
+         ========================================================================== */
+      renderArena() {
+        const canvas = this.mainCanvas;
+        const ctx = this.mainCtx;
+        const rows = this.rows;
+        const cols = this.cols;
+
+        const cellSize = Math.floor(Math.min(600 / cols, 600 / rows));
+        canvas.width = cols * cellSize;
+        canvas.height = rows * cellSize;
+
+        ctx.fillStyle = '#070d1e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 1. Draw Biomes & Grid
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const b = BIOMES[this.grid[r][c].biome];
+            ctx.fillStyle = b.bg;
+            ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+
+            // Subtle biome texture / accents
+            if (b.id === 'ice') {
+              ctx.strokeStyle = 'rgba(103, 232, 249, 0.25)';
+              ctx.strokeRect(c * cellSize + 1, r * cellSize + 1, cellSize - 2, cellSize - 2);
+            } else if (b.id === 'swamp') {
+              ctx.fillStyle = 'rgba(250, 204, 21, 0.08)';
+              ctx.beginPath();
+              ctx.arc(c * cellSize + cellSize / 2, r * cellSize + cellSize / 2, cellSize / 3, 0, Math.PI * 2);
+              ctx.fill();
+            } else if (b.id === 'wall') {
+              ctx.fillStyle = '#1e293b';
+              ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+              ctx.strokeStyle = '#334155';
+              ctx.strokeRect(c * cellSize + 0.5, r * cellSize + 0.5, cellSize - 1, cellSize - 1);
+            }
+          }
+        }
+
+        // 2. Draw Explored Nodes (Frontier Waves)
+        this.runners.forEach(runner => {
+          ctx.fillStyle = runner.color;
+          ctx.globalAlpha = 0.22;
+          for (const k of runner.visited) {
+            const [r, c] = k.split(',').map(Number);
+            ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+          }
+          ctx.globalAlpha = 1.0;
+        });
+
+        // 3. Draw Completed Paths with Glowing Lines
+        if (this.raceFinished) {
+          this.runners.forEach(runner => {
+            if (runner.path && this.visibleRoutes[runner.id]) {
+              ctx.strokeStyle = runner.color;
+              ctx.lineWidth = Math.max(2, Math.floor(cellSize / 4));
+              ctx.lineCap = 'round';
+              ctx.lineJoin = 'round';
+              ctx.shadowColor = runner.color;
+              ctx.shadowBlur = 10;
+
+              ctx.beginPath();
+              runner.path.forEach((pt, idx) => {
+                const x = pt.c * cellSize + cellSize / 2;
+                const y = pt.r * cellSize + cellSize / 2;
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+              });
+              ctx.stroke();
+
+              ctx.shadowBlur = 0; // reset shadow
+            }
+          });
+        }
+
+        // 4. Draw Current Runners (Avatars / Heads)
+        this.runners.forEach(runner => {
+          if (runner.current && !runner.finished) {
+            const cx = runner.current.c * cellSize + cellSize / 2;
+            const cy = runner.current.r * cellSize + cellSize / 2;
+            ctx.fillStyle = runner.color;
+            ctx.shadowColor = runner.color;
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.arc(cx, cy, Math.max(3, cellSize / 2.5), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
+        });
+
+        // 5. Draw Start & Finish Markers
+        const startX = this.start.c * cellSize + cellSize / 2;
+        const startY = this.start.r * cellSize + cellSize / 2;
+        ctx.fillStyle = '#4ade80';
+        ctx.shadowColor = '#4ade80';
+        ctx.shadowBlur = 14;
+        ctx.beginPath();
+        ctx.arc(startX, startY, Math.max(4, cellSize / 2.2), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        const finishX = this.finish.c * cellSize + cellSize / 2;
+        const finishY = this.finish.r * cellSize + cellSize / 2;
+        ctx.fillStyle = '#ff2e93';
+        ctx.shadowColor = '#ff2e93';
+        ctx.shadowBlur = 14;
+        ctx.beginPath();
+        ctx.arc(finishX, finishY, Math.max(4, cellSize / 2.2), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Render Split screens if active
+        if (this.viewMode === 'split') {
+          this.renderSplitCanvases();
+        }
+      }
+
+      renderSplitCanvases() {
+        const cellSize = Math.floor(280 / Math.max(this.rows, this.cols));
+        ['bfs', 'dfs', 'dijkstra', 'astar'].forEach(id => {
+          const ctx = this.splitCanvases[id];
+          const runner = this.runners.find(r => r.id === id);
+          if (!ctx || !runner) return;
+
+          ctx.fillStyle = '#030712';
+          ctx.fillRect(0, 0, 280, 280);
+
+          // Draw Terrain
+          for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+              ctx.fillStyle = BIOMES[this.grid[r][c].biome].bg;
+              ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+            }
+          }
+
+          // Draw visited
+          ctx.fillStyle = runner.color;
+          ctx.globalAlpha = 0.45;
+          for (const k of runner.visited) {
+            const [r, c] = k.split(',').map(Number);
+            ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+          }
+          ctx.globalAlpha = 1.0;
+
+          // Draw Path
+          if (runner.path) {
+            ctx.strokeStyle = runner.color;
+            ctx.lineWidth = Math.max(2, cellSize / 3);
+            ctx.beginPath();
+            runner.path.forEach((pt, i) => {
+              const x = pt.c * cellSize + cellSize / 2;
+              const y = pt.r * cellSize + cellSize / 2;
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+          }
+
+          // Status label
+          const statusEl = document.getElementById(`split${id.charAt(0).toUpperCase() + id.slice(1)}Status`);
+          if (statusEl) {
+            statusEl.textContent = runner.finished ? `ФИНИШ (Цена: ${runner.pathCost})` : `Узлов: ${runner.exploredCount}`;
+          }
+        });
+      }
+
+      /* ==========================================================================
+         Interactive Biome Painting on Canvas
+         ========================================================================== */
+      bindCanvasInteraction() {
+        let isDrawing = false;
+
+        const applyBrush = (e) => {
+          if (this.isRacing) return;
+          const rect = this.mainCanvas.getBoundingClientRect();
+          const scaleX = this.mainCanvas.width / rect.width;
+          const scaleY = this.mainCanvas.height / rect.height;
+          const x = (e.clientX - rect.left) * scaleX;
+          const y = (e.clientY - rect.top) * scaleY;
+
+          const cellSize = Math.floor(Math.min(600 / this.cols, 600 / this.rows));
+          const c = Math.floor(x / cellSize);
+          const r = Math.floor(y / cellSize);
+
+          if (r < 0 || r >= this.rows || c < 0 || c >= this.cols) return;
+
+          if (this.brush === 'start') {
+            this.start = { r, c };
+            this.grid[r][c].biome = 'ice';
+          } else if (this.brush === 'finish') {
+            this.finish = { r, c };
+            this.grid[r][c].biome = 'ice';
+          } else {
+            this.grid[r][c].biome = this.brush;
+          }
+
+          sound.playTone(450, 'sine', 0.03, 0.03);
+          this.resetRaceState();
+        };
+
+        this.mainCanvas.addEventListener('mousedown', (e) => {
+          isDrawing = true;
+          applyBrush(e);
+        });
+        window.addEventListener('mouseup', () => isDrawing = false);
+        this.mainCanvas.addEventListener('mousemove', (e) => {
+          if (isDrawing) applyBrush(e);
+        });
+
+        // Touch support
+        this.mainCanvas.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          isDrawing = true;
+          if (e.touches[0]) applyBrush(e.touches[0]);
+        }, { passive: false });
+        this.mainCanvas.addEventListener('touchmove', (e) => {
+          e.preventDefault();
+          if (isDrawing && e.touches[0]) applyBrush(e.touches[0]);
+        }, { passive: false });
+        this.mainCanvas.addEventListener('touchend', () => isDrawing = false);
+      }
+
+      /* ==========================================================================
+         The Race Loop
+         ========================================================================== */
+      startRace() {
+        if (this.isRacing) return;
+
+        const totalBet = this.betAmount * 2;
+        if (this.wallet < totalBet) {
+          alert('Недостаточно QAIRU Credits! Нажмите "+" возле кошелька, чтобы пополнить баланс.');
+          return;
+        }
+
+        // Deduct bet
+        this.wallet -= totalBet;
+        this.updateWalletUI();
+
+        this.resetRaceState();
+        this.isRacing = true;
+        document.getElementById('btnStartRace').disabled = true;
+
+        document.getElementById('raceStateBadge').textContent = 'ЗАБЕГ В РАЗГАРЕ!';
+        document.getElementById('raceStateBadge').className = 'badge-win';
+        document.getElementById('raceStateBadge').style.background = 'rgba(255, 46, 147, 0.2)';
+        document.getElementById('raceStateBadge').style.color = 'var(--pink)';
+
+        // Countdown fanfare
+        sound.playCountdown(false);
+        this.updateCommentary("3... 2... 1... СТАРТ! Алгоритмы сорвались со стартовой линии!");
+
+        if (this.speedMode === 'instant') {
+          this.runInstantRace();
+          return;
+        }
+
+        let stepsPerFrame = 1;
+        if (this.speedMode === 'slow') stepsPerFrame = 1;
+        else if (this.speedMode === 'normal') stepsPerFrame = 3;
+        else if (this.speedMode === 'fast') stepsPerFrame = 10;
+
+        let frameCounter = 0;
+
+        const tick = () => {
+          if (!this.isRacing) return;
+
+          let anyActive = false;
+
+          for (let step = 0; step < stepsPerFrame; step++) {
+            for (const runner of this.runners) {
+              if (!runner.finished && !runner.failed) {
+                runner.step();
+                anyActive = true;
+
+                if (runner.finished && !this.finishOrder.includes(runner.id)) {
+                  this.finishOrder.push(runner.id);
+                  runner.finishRank = this.finishOrder.length;
+
+                  // Audio notification
+                  sound.playStep(this.grid[runner.finish.r][runner.finish.c].biome);
+
+                  if (this.finishOrder.length === 1) {
+                    this.updateCommentary(`🏁 ПЕРВЫМ ПЕРЕСЁК ФИНИШ: ${runner.name}! Невероятная скорость!`);
+                  }
+                }
+              }
+            }
+          }
+
+          frameCounter++;
+          if (frameCounter % 6 === 0) {
+            this.updateLiveHUD();
+          }
+
+          this.renderArena();
+
+          if (anyActive) {
+            this.animFrameId = requestAnimationFrame(tick);
+          } else {
+            this.onRaceCompleted();
+          }
+        };
+
+        this.animFrameId = requestAnimationFrame(tick);
+      }
+
+      runInstantRace() {
+        while (true) {
+          let anyActive = false;
+          for (const runner of this.runners) {
+            if (!runner.finished && !runner.failed) {
+              runner.step();
+              anyActive = true;
+              if (runner.finished && !this.finishOrder.includes(runner.id)) {
+                this.finishOrder.push(runner.id);
+                runner.finishRank = this.finishOrder.length;
+              }
+            }
+          }
+          if (!anyActive) break;
+        }
+        this.renderArena();
+        this.onRaceCompleted();
+      }
+
+      updateLiveHUD() {
+        this.runners.forEach(r => {
+          const nodesEl = document.getElementById(`hud-nodes-${r.id}`);
+          const barEl = document.getElementById(`hud-bar-${r.id}`);
+          const statusEl = document.getElementById(`hud-status-${r.id}`);
+          if (nodesEl) nodesEl.textContent = r.exploredCount;
+          if (barEl) {
+            const pct = Math.min(100, Math.round((r.exploredCount / (this.rows * this.cols)) * 100));
+            barEl.style.width = `${pct}%`;
+          }
+          if (statusEl && r.finished) {
+            statusEl.textContent = `ФИНИШ #${r.finishRank}`;
+            statusEl.style.color = 'var(--green)';
+          }
+        });
+      }
+
+      onRaceCompleted() {
+        this.isRacing = false;
+        this.raceFinished = true;
+
+        document.getElementById('btnStartRace').style.display = 'none';
+        document.getElementById('btnResetRace').style.display = 'inline-flex';
+
+        document.getElementById('raceStateBadge').textContent = 'ФИНИШ!';
+        document.getElementById('raceStateBadge').style.background = 'rgba(124, 240, 181, 0.2)';
+        document.getElementById('raceStateBadge').style.color = 'var(--green)';
+
+        // Determine Energy Winner (Lowest pathCost)
+        const finishedRunners = this.runners.filter(r => r.finished && r.pathCost > 0);
+        finishedRunners.sort((a, b) => a.pathCost - b.pathCost);
+
+        const minCost = finishedRunners.length > 0 ? finishedRunners[0].pathCost : Infinity;
+        const energyWinners = finishedRunners.filter(r => r.pathCost === minCost);
+
+        const speedWinnerId = this.finishOrder[0] || null;
+        const speedWinner = this.runners.find(r => r.id === speedWinnerId);
+
+        // Process Bets
+        let totalWinnings = 0;
+        let speedWon = false;
+        let energyWon = false;
+
+        const speedChoice = ALGORITHMS.find(a => a.id === this.selectedSpeedAlgo);
+        const energyChoice = ALGORITHMS.find(a => a.id === this.selectedEnergyAlgo);
+
+        if (speedWinner && speedWinner.id === this.selectedSpeedAlgo) {
+          speedWon = true;
+          totalWinnings += Math.round(this.betAmount * speedChoice.speedOdds);
+        }
+
+        if (energyWinners.some(w => w.id === this.selectedEnergyAlgo)) {
+          energyWon = true;
+          totalWinnings += Math.round(this.betAmount * energyChoice.energyOdds);
+        }
+
+        if (totalWinnings > 0) {
+          this.wallet += totalWinnings;
+          this.updateWalletUI();
+          sound.playFanfare();
+          this.triggerConfetti();
+          this.updateCommentary(`🎉 ВЫИГРЫШ В ТОТАЛИЗАТОРЕ! Вы заработали +${totalWinnings} CR!`);
+        } else {
+          sound.playBuzzer();
+          this.updateCommentary(`Забег окончен! Победитель скорости: ${speedWinner?.name || 'Никто'}. Мин. энергия: ${energyWinners.map(w => w.name).join(', ')}.`);
+        }
+
+        this.renderRunnersHUD();
+        this.renderArena();
+
+        // Open Results Modal
+        setTimeout(() => {
+          this.showResultsModal(speedWinner, energyWinners, speedWon, energyWon, totalWinnings);
+        }, 600);
+      }
+
+      /* ==========================================================================
+         Results Modal & Analysis (Key prompt requirement)
+         ========================================================================== */
+      showResultsModal(speedWinner, energyWinners, speedWon, energyWon, totalWinnings) {
+        const modal = document.getElementById('resultsModal');
+        const podium = document.getElementById('resultsPodium');
+        const tbody = document.getElementById('statsTableBody');
+        const chartCost = document.getElementById('chartCostBars');
+        const chartNodes = document.getElementById('chartNodesBars');
+        const routeBoxes = document.getElementById('routeCheckboxes');
+
+        // 1. Render Podium
+        const minCost = energyWinners.length > 0 ? energyWinners[0].pathCost : '—';
+        podium.innerHTML = `
+          <div class="podium-card" style="--card-color: var(--cyan)">
+            <div class="podium-badge">⚡ ЛИДЕР ПО СКОРОСТИ</div>
+            <div style="font-family: 'Unbounded'; font-size: 18px; color: ${speedWinner?.color || '#fff'}">
+              ${speedWinner?.name || 'Никто'}
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono'">
+              Узлов исследовано: <b>${speedWinner?.exploredCount || '—'}</b> | Время: <b>${speedWinner ? speedWinner.timeMs.toFixed(1) : '—'} мс</b>
+            </div>
+            <div style="margin-top: 4px;">
+              ${speedWon ? `<span class="badge-win">✅ Ставка выиграла (+${Math.round(this.betAmount * ALGORITHMS.find(a => a.id === this.selectedSpeedAlgo).speedOdds)} CR)</span>` : `<span class="badge-lose">❌ Ставка проиграла</span>`}
+            </div>
+          </div>
+
+          <div class="podium-card" style="--card-color: var(--yellow)">
+            <div class="podium-badge">🔋 ЧЕМПИОН ПО ЭНЕРГИИ</div>
+            <div style="font-family: 'Unbounded'; font-size: 18px; color: var(--yellow)">
+              ${energyWinners.map(w => w.name).join(', ')}
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono'">
+              Стоимость пути: <b>${minCost}</b> (Оптимум по Дейкстре/A*)
+            </div>
+            <div style="margin-top: 4px;">
+              ${energyWon ? `<span class="badge-win">✅ Ставка выиграла (+${Math.round(this.betAmount * ALGORITHMS.find(a => a.id === this.selectedEnergyAlgo).energyOdds)} CR)</span>` : `<span class="badge-lose">❌ Ставка проиграла</span>`}
+            </div>
+          </div>
+        `;
+
+        // 2. Render Full Stats Table
+        tbody.innerHTML = '';
+        this.runners.forEach(r => {
+          const tr = document.createElement('tr');
+          const isEnergyOpt = energyWinners.some(w => w.id === r.id);
+          const isSpeedOpt = speedWinner && speedWinner.id === r.id;
+          if (isEnergyOpt || isSpeedOpt) tr.classList.add('winner-row');
+
+          let betStatus = '<span style="color: var(--text-dim)">—</span>';
+          if (this.selectedSpeedAlgo === r.id && isSpeedOpt) {
+            betStatus = '<span class="badge-win">Выигрыш (Спринт)</span>';
+          } else if (this.selectedEnergyAlgo === r.id && isEnergyOpt) {
+            betStatus = '<span class="badge-win">Выигрыш (Энергия)</span>';
+          } else if (this.selectedSpeedAlgo === r.id || this.selectedEnergyAlgo === r.id) {
+            betStatus = '<span class="badge-lose">Проигрыш</span>';
+          }
+
+          tr.innerHTML = `
+            <td style="font-weight: 700; color: ${r.color}">● ${r.name}</td>
+            <td>${r.finished ? `<span class="badge-win">Достиг цели (#${r.finishRank})</span>` : `<span class="badge-lose">Не финишировал</span>`}</td>
+            <td>${r.exploredCount}</td>
+            <td>${r.pathLength || '—'} шагов</td>
+            <td style="font-weight: 700; color: ${isEnergyOpt ? 'var(--yellow)' : 'inherit'}">${r.pathCost || '—'} ${isEnergyOpt ? '⭐' : ''}</td>
+            <td>${r.timeMs.toFixed(1)} мс</td>
+            <td>${r.peakMemory}</td>
+            <td>${betStatus}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // 3. Render Comparison Bar Charts
+        chartCost.innerHTML = '';
+        chartNodes.innerHTML = '';
+
+        const maxCost = Math.max(...this.runners.map(r => r.pathCost || 1));
+        const maxNodes = Math.max(...this.runners.map(r => r.exploredCount || 1));
+
+        this.runners.forEach(r => {
+          // Cost row
+          const costRow = document.createElement('div');
+          costRow.className = 'chart-bar-row';
+          const costPct = r.pathCost ? Math.round((r.pathCost / maxCost) * 100) : 0;
+          costRow.innerHTML = `
+            <span style="color: ${r.color}">● ${r.name}</span>
+            <div class="chart-bar-bg">
+              <div class="chart-bar-fill" style="width: ${costPct}%; background: ${r.color}"></div>
+            </div>
+            <b>${r.pathCost || '—'}</b>
+          `;
+          chartCost.appendChild(costRow);
+
+          // Nodes row
+          const nodesRow = document.createElement('div');
+          nodesRow.className = 'chart-bar-row';
+          const nodesPct = Math.round((r.exploredCount / maxNodes) * 100);
+          nodesRow.innerHTML = `
+            <span style="color: ${r.color}">● ${r.name}</span>
+            <div class="chart-bar-bg">
+              <div class="chart-bar-fill" style="width: ${nodesPct}%; background: ${r.color}"></div>
+            </div>
+            <b>${r.exploredCount}</b>
+          `;
+          chartNodes.appendChild(nodesRow);
+        });
+
+        // 4. Render Route Toggle Checkboxes
+        routeBoxes.innerHTML = '';
+        this.runners.forEach(r => {
+          const label = document.createElement('label');
+          label.style.display = 'inline-flex';
+          label.style.alignItems = 'center';
+          label.style.gap = '6px';
+          label.style.cursor = 'pointer';
+          label.style.fontSize = '12px';
+          label.style.fontFamily = 'JetBrains Mono';
+          label.style.color = r.color;
+
+          const chk = document.createElement('input');
+          chk.type = 'checkbox';
+          chk.checked = this.visibleRoutes[r.id];
+          chk.onchange = () => {
+            this.visibleRoutes[r.id] = chk.checked;
+            this.renderArena();
+          };
+
+          label.appendChild(chk);
+          label.appendChild(document.createTextNode(r.name));
+          routeBoxes.appendChild(label);
+        });
+
+        modal.classList.add('open');
+      }
+
+      /* ==========================================================================
+         UI Event Handlers & Modal Controls
+         ========================================================================== */
+      bindEvents() {
+        // Preset map buttons
+        document.querySelectorAll('[data-preset]').forEach(btn => {
+          btn.onclick = () => {
+            sound.playTone(600, 'sine', 0.05, 0.05);
+            document.querySelectorAll('[data-preset]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.preset = btn.dataset.preset;
+            this.loadMap();
+          };
+        });
+
+        // Grid size buttons
+        document.querySelectorAll('[data-size]').forEach(btn => {
+          btn.onclick = () => {
+            sound.playTone(600, 'sine', 0.05, 0.05);
+            document.querySelectorAll('[data-size]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.rows = parseInt(btn.dataset.size, 10);
+            this.cols = parseInt(btn.dataset.size, 10);
+            this.loadMap();
+          };
+        });
+
+        document.getElementById('btnRegenerateMap').onclick = () => {
+          sound.playTone(600, 'triangle', 0.08, 0.06);
+          this.loadMap();
+        };
+
+        // Biome brush selector
+        document.querySelectorAll('.biome-brush').forEach(btn => {
+          btn.onclick = () => {
+            sound.playTone(550, 'sine', 0.05, 0.05);
+            document.querySelectorAll('.biome-brush').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.brush = btn.dataset.biome;
+          };
+        });
+
+        // View Mode Switcher
+        document.querySelectorAll('.view-tab').forEach(tab => {
+          tab.onclick = () => {
+            sound.playTone(500, 'sine', 0.05, 0.05);
+            document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            this.viewMode = tab.dataset.view;
+
+            const combinedWrap = document.getElementById('combinedWrap');
+            const splitWrap = document.getElementById('splitWrap');
+            if (this.viewMode === 'combined') {
+              combinedWrap.style.display = 'grid';
+              splitWrap.style.display = 'none';
+            } else {
+              combinedWrap.style.display = 'none';
+              splitWrap.style.display = 'grid';
+            }
+            this.renderArena();
+          };
+        });
+
+        // Speed buttons
+        document.querySelectorAll('[data-speed]').forEach(btn => {
+          btn.onclick = () => {
+            sound.playTone(650, 'sine', 0.05, 0.05);
+            document.querySelectorAll('[data-speed]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.speedMode = btn.dataset.speed;
+          };
+        });
+
+        // Bet Chip Amount
+        document.querySelectorAll('.bet-chip').forEach(chip => {
+          chip.onclick = () => {
+            sound.playTone(720, 'sine', 0.05, 0.05);
+            document.querySelectorAll('.bet-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            const amt = chip.dataset.amount;
+            if (amt === 'all') {
+              this.betAmount = Math.max(10, Math.floor(this.wallet / 2));
+            } else {
+              this.betAmount = parseInt(amt, 10);
+            }
+            this.updateBetSummary();
+          };
+        });
+
+        // Launch & Reset
+        document.getElementById('btnStartRace').onclick = () => this.startRace();
+        document.getElementById('btnResetRace').onclick = () => {
+          sound.playTone(500, 'sine', 0.05, 0.05);
+          this.resetRaceState();
+        };
+
+        // Add Coins
+        document.getElementById('btnAddCoins').onclick = () => {
+          this.wallet += 500;
+          this.updateWalletUI();
+          sound.playCoin();
+        };
+
+        // Modal Controls
+        const resModal = document.getElementById('resultsModal');
+        document.getElementById('btnCloseResults').onclick = () => resModal.classList.remove('open');
+        document.getElementById('btnModalPlayAgain').onclick = () => {
+          resModal.classList.remove('open');
+          this.resetRaceState();
+        };
+
+        const defModal = document.getElementById('defenseModal');
+        document.getElementById('btnOpenDefense').onclick = () => {
+          sound.playTone(700, 'sine', 0.06, 0.05);
+          defModal.classList.add('open');
+        };
+        document.getElementById('btnCloseDefense').onclick = () => defModal.classList.remove('open');
+
+        // Close on background click
+        window.onclick = (e) => {
+          if (e.target === resModal) resModal.classList.remove('open');
+          if (e.target === defModal) defModal.classList.remove('open');
+        };
+      }
+
+      /* ==========================================================================
+         Confetti Particle FX (Web Audio celebration)
+         ========================================================================== */
+      resizeConfetti() {
+        this.confettiCanvas.width = window.innerWidth;
+        this.confettiCanvas.height = window.innerHeight;
+      }
+
+      triggerConfetti() {
+        const colors = ['#ff2e93', '#4cc9f0', '#ffc145', '#7cf0b5', '#ffffff'];
+        this.confettiParticles = [];
+        for (let i = 0; i < 90; i++) {
+          this.confettiParticles.push({
+            x: window.innerWidth * 0.5,
+            y: window.innerHeight * 0.3,
+            vx: (Math.random() - 0.5) * 16,
+            vy: (Math.random() - 0.7) * 16,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            size: Math.random() * 8 + 4,
+            rotation: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 12,
+            life: 1.0,
+            decay: Math.random() * 0.015 + 0.008
+          });
+        }
+        this.renderConfetti();
+      }
+
+      renderConfetti() {
+        const ctx = this.confettiCtx;
+        ctx.clearRect(0, 0, this.confettiCanvas.width, this.confettiCanvas.height);
+
+        for (let i = this.confettiParticles.length - 1; i >= 0; i--) {
+          const p = this.confettiParticles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.4; // gravity
+          p.rotation += p.rotSpeed;
+          p.life -= p.decay;
+
+          if (p.life <= 0) {
+            this.confettiParticles.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = p.life;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+        }
+
+        if (this.confettiParticles.length > 0) {
+          requestAnimationFrame(() => this.renderConfetti());
+        } else {
+          ctx.clearRect(0, 0, this.confettiCanvas.width, this.confettiCanvas.height);
+        }
+      }
+    }
+
+    // Export class
+    window.AlgorithmSweepstakesApp = AlgorithmSweepstakesApp;
+
+    // Launch Application
+    window.addEventListener('DOMContentLoaded', () => {
+      window.app = new AlgorithmSweepstakesApp();
+    });
+  </script>
+</body>
+</html>

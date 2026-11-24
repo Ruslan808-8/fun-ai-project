@@ -66,6 +66,7 @@
     <div class="tabs" id="tabs" role="tablist">
       <button class="tab on" data-g="0" role="tab" aria-selected="true">⚡ Pulse Protocol FPS</button>
       <button class="tab" data-g="1" role="tab" aria-selected="false">★ Охотник за кладом</button>
+      <button class="tab" data-g="2" role="tab" aria-selected="false">🏇 Тотализатор алгоритмов</button>
     </div>
 
     <!-- Игра 1: Pulse Protocol FPS -->
@@ -108,6 +109,29 @@
       </div>
       <div class="iframe-wrap">
         <iframe title="Охотник за кладом" sandbox="allow-scripts allow-same-origin" loading="lazy" src="game.html"></iframe>
+      </div>
+    </div>
+
+    <!-- Игра 3: Тотализатор алгоритмов -->
+    <div class="stage wide" id="stage-2">
+      <div class="info">
+        <div class="hunter-head">
+          <div>
+            <h3>Тотализатор алгоритмов (Гонка со ставками и биомами)</h3>
+            <p>Взвешенная карта биомов: лёд (1), трава (2), болото (5), стены (∞). Процедурная генерация лабиринтов через Randomized DFS! Делай ставки в тотализаторе: кто дойдёт быстрее (время / узлы) и кто найдёт самый дешёвый путь по энергии. Смотри динамичный забег на арене и сравнительную аналитику поиска пути!</p>
+          </div>
+          <a class="btn btn-sm" href="race.html" target="_blank" rel="noopener">На весь экран ↗</a>
+        </div>
+        <div class="chips-list">
+          <span class="chip">Взвешенные графы</span>
+          <span class="chip">Randomized DFS (Лабиринты)</span>
+          <span class="chip">Тотализатор & Ставки</span>
+          <span class="chip">BFS vs Дейкстра vs A*</span>
+          <span class="chip">Биомы (Лёд, Трава, Болото)</span>
+        </div>
+      </div>
+      <div class="iframe-wrap">
+        <iframe title="Тотализатор алгоритмов" sandbox="allow-scripts allow-same-origin" loading="lazy" src="race.html"></iframe>
       </div>
     </div>
   </div>
@@ -306,6 +330,16 @@
           <span class="cmap-tag">Охотник за кладом</span>
         </div>
       </a>
+
+      <a href="#games" class="cmap-card rv" data-tilt data-game="2">
+        <div class="cmap-icon">🏇</div>
+        <h3>Тотализатор & Биомы</h3>
+        <p>Взвешенные графы (лёд=1, трава=2, болото=5), процедурная генерация Randomized DFS и сравнительный тотализатор</p>
+        <div class="cmap-where">
+          <span class="cmap-tag">Тотализатор алгоритмов</span>
+          <span class="cmap-tag">Гонка биомов</span>
+        </div>
+      </a>
     </div>
   </div>
 </section>
@@ -322,13 +356,13 @@
         <div class="av">BT</div>
         <h3>Batyr Tokenuly</h3>
         <small>QAIRU</small>
-        <span class="badge">Team Lead & Frontend</span>
+        <span class="badge">Team Lead & Backend</span>
       </div>
       <div class="pc rv" data-tilt>
         <div class="av">AI</div>
         <h3>Aitmukhanbetov Iasin</h3>
         <small>QAIRU</small>
-        <span class="badge">Game dev</span>
+        <span class="badge">Machine Learning</span>
       </div>
       <div class="pc rv" data-tilt>
         <div class="av">RT</div>
@@ -340,7 +374,7 @@
         <div class="av">DZ</div>
         <h3>Daulet Zhigerkhan</h3>
         <small>QAIRU</small>
-        <span class="badge">Quality Assurance Engineer</span>
+        <span class="badge">Game Engine & A*</span>
       </div>
     </div>
   </div>
